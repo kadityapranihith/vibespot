@@ -19,11 +19,12 @@ import {
   Cake,
   CupSoda,
   Check,
-  ChevronRight,
-  Info,
+  ChevronDown,
+  ChevronUp,
   AlertCircle,
+  Filter,
 } from 'lucide-react';
-import type { Place, SortOption, UserLocation } from '@/types';
+import type { Place, SortOption } from '@/types';
 import { PlaceCard } from '@/components/place/PlaceCard';
 import { useUserLocation } from '@/lib/hooks/useUserLocation';
 import {
@@ -55,7 +56,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     () => ['All', ...extractUniqueCategories(initialPlaces)],
     [initialPlaces]
   );
-  const dynamicTags = useMemo(
+  const allDynamicTags = useMemo(
     () => extractUniqueTags(initialPlaces),
     [initialPlaces]
   );
@@ -63,6 +64,28 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     () => getPriceBounds(initialPlaces),
     [initialPlaces]
   );
+
+  // Curated prominent tags (standardized vibe tags first)
+  const popularVibeTags = useMemo(() => {
+    const priority = [
+      'Student-Friendly',
+      'Budget-Friendly',
+      'Café & Hangout',
+      'Pure Vegetarian',
+      'Non-Veg Options',
+      'Biryani & Rice',
+      'Burgers & Fast Food',
+      'Buffet & Grills',
+      'South Indian & Tiffin',
+      'Tea & Coffee',
+      'Bakery & Desserts',
+      'Quick Snacks & Street Food',
+      'Pizza',
+    ];
+    const availablePriority = priority.filter((p) => allDynamicTags.includes(p));
+    const remainder = allDynamicTags.filter((t) => !priority.includes(t));
+    return [...availablePriority, ...remainder];
+  }, [allDynamicTags]);
 
   // Parse initial state from URL search params
   const paramSearch = searchParams.get('q') || searchParams.get('search') || '';
@@ -88,8 +111,8 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
   const [maxPrice, setMaxPrice] = useState<number>(paramMaxPrice);
   const [sortOption, setSortOption] = useState<SortOption>(paramSort);
 
-  // Mobile / Filter panel toggle
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // Compact tag expansion state
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false);
   const [tagSearchInput, setTagSearchInput] = useState('');
 
   // Auto-switch to distance sorting when location is granted if user hasn't explicitly selected another sort
@@ -146,6 +169,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     setMinPrice(priceBounds.min);
     setMaxPrice(priceBounds.max);
     setSortOption(location ? 'distance_asc' : 'default');
+    setTagSearchInput('');
   };
 
   // Check if any non-default filters are active
@@ -201,20 +225,17 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
       list = list.filter((p) => {
         const placeTags = p.tags || [];
         if (tagLogic === 'AND') {
-          // Must match ALL selected tags
           return selectedTags.every((st) => placeTags.includes(st));
         }
-        // Match AT LEAST ONE selected tag (OR)
         return selectedTags.some((st) => placeTags.includes(st));
       });
     }
 
     // 5. Price-for-two filter
-    // Treat missing prices as unknown: do not silently include in restrictive range
     if (maxPrice < priceBounds.max || minPrice > priceBounds.min) {
       list = list.filter((p) => {
         if (p.price_per_two === null || p.price_per_two === undefined) {
-          return false; // Unknown price excluded from restrictive price range
+          return false;
         }
         return p.price_per_two >= minPrice && p.price_per_two <= maxPrice;
       });
@@ -224,7 +245,6 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     const sorted = [...list];
     if (sortOption === 'distance_asc') {
       sorted.sort((a, b) => {
-        // Place items with valid distance first
         const hasA = a.distanceKm !== null && a.distanceKm !== undefined;
         const hasB = b.distanceKm !== null && b.distanceKm !== undefined;
         if (hasA && hasB) return a.distanceKm! - b.distanceKm!;
@@ -282,24 +302,30 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     return UtensilsCrossed;
   };
 
-  // Filtered tags for quick chip search in filter drawer
-  const visibleTags = useMemo(() => {
-    if (!tagSearchInput.trim()) return dynamicTags;
-    return dynamicTags.filter((t) =>
-      t.toLowerCase().includes(tagSearchInput.trim().toLowerCase())
-    );
-  }, [dynamicTags, tagSearchInput]);
+  // Compact tag view: show first 12 tags + selected tags when collapsed; show full search list when expanded
+  const displayedTags = useMemo(() => {
+    if (isTagsExpanded) {
+      if (!tagSearchInput.trim()) return allDynamicTags;
+      return allDynamicTags.filter((t) =>
+        t.toLowerCase().includes(tagSearchInput.trim().toLowerCase())
+      );
+    }
+    // Collapsed: show top 13 vibe tags + any currently selected tags that are not in top 13
+    const top = popularVibeTags.slice(0, 13);
+    const extraSelected = selectedTags.filter((t) => !top.includes(t));
+    return [...top, ...extraSelected];
+  }, [isTagsExpanded, tagSearchInput, allDynamicTags, popularVibeTags, selectedTags]);
 
   return (
     <div className="w-full">
       {/* ========================================================= */}
       {/* SECTION B: HERO SECTION                                   */}
       {/* ========================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/60 via-amber-50/30 to-transparent pt-10 pb-8 sm:pt-14 sm:pb-12 border-b border-orange-100/50">
+      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-amber-50/30 to-transparent pt-10 pb-8 sm:pt-14 sm:pb-12 border-b border-orange-100/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             {/* City indicator badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-sm mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-xs mb-4">
               <MapPin size={13} className="text-orange-500 fill-orange-500" />
               <span>Kakinada, Andhra Pradesh</span>
             </div>
@@ -310,7 +336,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
             </h1>
 
             <p className="mt-3 sm:mt-4 text-stone-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-              Explore 54 curated restaurants, cafés, and street food gems in Kakinada. Filter by budget, ambience, dietary preferences, and straight-line distance.
+              Explore 54 curated restaurants, cafés, and quick bites in Kakinada. Filter by budget, ambience, dietary preferences, and straight-line distance.
             </p>
 
             {/* Prominent Search Field */}
@@ -436,16 +462,16 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
         </section>
 
         {/* ========================================================= */}
-        {/* SECTION D: DYNAMIC TAG FILTERS (ALL UNIQUE DATASET TAGS)   */}
+        {/* SECTION D: COMPACT & ORGANIZED TAG FILTERS                */}
         {/* ========================================================= */}
-        <section className="mb-8 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-sm">
+        <section className="mb-8 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2">
               <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                Filter by Vibe & Diet Tags
+                Filter by Vibe & Diet
               </h2>
               <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                {dynamicTags.length} tags
+                {allDynamicTags.length} tags
               </span>
             </div>
 
@@ -488,9 +514,23 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
             </div>
           </div>
 
-          {/* Horizontally scrollable tag chip container */}
-          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-            {dynamicTags.map((tag) => {
+          {/* Quick search when expanded */}
+          {isTagsExpanded && (
+            <div className="mb-3 relative max-w-sm">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                value={tagSearchInput}
+                onChange={(e) => setTagSearchInput(e.target.value)}
+                placeholder="Search specific tags (e.g. Mandi, Chinese)..."
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-orange-500 text-stone-800"
+              />
+            </div>
+          )}
+
+          {/* Compact Chips Grid */}
+          <div className="flex flex-wrap gap-1.5">
+            {displayedTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <button
@@ -508,6 +548,27 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                 </button>
               );
             })}
+
+            {/* Expand / Collapse Toggle Button */}
+            <button
+              onClick={() => {
+                setIsTagsExpanded(!isTagsExpanded);
+                if (isTagsExpanded) setTagSearchInput('');
+              }}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors select-none"
+            >
+              {isTagsExpanded ? (
+                <>
+                  <span>Show fewer</span>
+                  <ChevronUp size={13} />
+                </>
+              ) : (
+                <>
+                  <span>+ {allDynamicTags.length - 13} more tags</span>
+                  <ChevronDown size={13} />
+                </>
+              )}
+            </button>
           </div>
 
           <div className="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
@@ -525,7 +586,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
         {/* ========================================================= */}
         {/* SECTION 5: PRICE-FOR-TWO & DISCOVERY CONTROLS ROW        */}
         {/* ========================================================= */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-sm">
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs">
           {/* Price-for-two filter */}
           <div className="flex-1 max-w-xl">
             <div className="flex items-center justify-between mb-2">
@@ -700,7 +761,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
           </div>
         ) : (
           /* Empty State */
-          <div className="bg-white rounded-3xl border border-stone-200 p-10 sm:p-14 text-center max-w-lg mx-auto shadow-sm">
+          <div className="bg-white rounded-3xl border border-stone-200 p-10 sm:p-14 text-center max-w-lg mx-auto shadow-xs">
             <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-4">
               <Search size={24} />
             </div>
@@ -723,4 +784,3 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     </div>
   );
 }
-
