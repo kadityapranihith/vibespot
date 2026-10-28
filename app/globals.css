@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --orange: #ea580c;
+  --orange-dark: #c2410c;
+  --orange-light: #f97316;
+  --bg: #faf8f5;
+  --font-logo: 'Playfair Display', Georgia, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: #1c1917;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.logo-script {
+  font-family: var(--font-logo), Georgia, serif;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.btn-orange {
+  background-color: #ea580c;
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-orange:hover {
+  background-color: #c2410c;
+}
+
+.btn-orange:active {
+  transform: scale(0.98);
+}
+
+.btn-orange:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
