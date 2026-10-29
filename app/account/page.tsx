@@ -14,6 +14,7 @@ import {
   Edit3,
   Loader2,
   ExternalLink,
+  RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { StarRating } from '@/components/ui/StarRating';
@@ -47,39 +48,43 @@ export default function AccountPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
+  const loadRatings = async () => {
     if (!user) return;
-    let active = true;
-
-    async function loadRatings() {
-      try {
-        const token = await getIdToken();
-        if (!token) return;
-
-        const res = await fetch('/api/ratings', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (active && Array.isArray(data.ratings)) {
-            setRatings(data.ratings);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load user ratings:', err);
-      } finally {
-        if (active) setLoadingRatings(false);
+    setLoadingRatings(true);
+    try {
+      const token = await getIdToken();
+      if (!token) {
+        setLoadingRatings(false);
+        return;
       }
-    }
 
-    loadRatings();
-    return () => {
-      active = false;
-    };
-  }, [user, getIdToken]);
+      const res = await fetch('/api/ratings', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-store',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.ratings)) {
+          setRatings(data.ratings);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load user ratings:', err);
+    } finally {
+      setLoadingRatings(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.uid) {
+      loadRatings();
+    } else if (!loading) {
+      setLoadingRatings(false);
+    }
+  }, [user?.uid, loading]);
 
   if (loading || !user) {
     return (
@@ -175,11 +180,21 @@ export default function AccountPage() {
               1 rating per spot. You can edit any of your ratings anytime.
             </p>
           </div>
-          {!loadingRatings && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/60">
-              {ratings.length} rated
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {!loadingRatings && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-600 border border-orange-200/60">
+                {ratings.length} rated
+              </span>
+            )}
+            <button
+              onClick={loadRatings}
+              disabled={loadingRatings}
+              title="Refresh ratings"
+              className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors disabled:opacity-50"
+            >
+              <RotateCcw size={14} className={loadingRatings ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
         {loadingRatings ? (

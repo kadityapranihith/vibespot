@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from 'react';
 import {
   User,
   onAuthStateChanged,
@@ -42,39 +42,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     if (!isFirebaseConfigured()) throw new Error('Firebase is not configured');
     await signInWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     if (!isFirebaseConfigured()) throw new Error('Firebase is not configured');
     await createUserWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     if (!isFirebaseConfigured()) throw new Error('Firebase is not configured');
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
-  };
+  }, []);
 
-  const signOutUser = async () => {
+  const signOutUser = useCallback(async () => {
     if (!isFirebaseConfigured()) return;
     await signOut(auth);
-  };
+  }, []);
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     if (!isFirebaseConfigured()) throw new Error('Firebase is not configured');
     await sendPasswordResetEmail(auth, email);
-  };
+  }, []);
 
-  const getIdToken = async (): Promise<string | null> => {
-    if (!user) return null;
-    return user.getIdToken();
-  };
+  const getIdToken = useCallback(async (): Promise<string | null> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return null;
+    return currentUser.getIdToken();
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{
+  const value = useMemo(
+    () => ({
       user,
       loading,
       signIn,
@@ -83,7 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOutUser,
       resetPassword,
       getIdToken,
-    }}>
+    }),
+    [user, loading, signIn, signUp, signInWithGoogle, signOutUser, resetPassword, getIdToken]
+  );
+
+  return (
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
