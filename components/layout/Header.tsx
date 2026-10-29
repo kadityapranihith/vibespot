@@ -13,6 +13,7 @@ import {
   Compass,
   Sparkles,
   SlidersHorizontal,
+  MessageSquarePlus,
 } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 import { cn } from '@/lib/utils';
@@ -179,6 +180,14 @@ export function Header() {
                       <User size={15} className="text-stone-400" />
                       My Profile & Ratings
                     </Link>
+                    <Link
+                      href="/feedback"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+                    >
+                      <MessageSquarePlus size={15} className="text-orange-500" />
+                      Report Bug / Ideas
+                    </Link>
                     <button
                       onClick={async () => {
                         setUserDropdownOpen(false);
@@ -293,6 +302,14 @@ export function Header() {
             >
               <Sparkles size={15} className="text-orange-500" />
               Cafés & Hangouts
+            </Link>
+            <Link
+              href="/feedback"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-stone-50 hover:bg-orange-50 hover:text-orange-600 text-stone-700"
+            >
+              <MessageSquarePlus size={15} className="text-orange-500" />
+              Send Feedback / Report Bug
             </Link>
           </div>
         </div>

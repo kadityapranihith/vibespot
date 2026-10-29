@@ -54,6 +54,11 @@ export function Footer() {
                   Budget Friendly
                 </Link>
               </li>
+              <li className="pt-2 border-t border-stone-800">
+                <Link href="/feedback" className="hover:text-orange-400 transition-colors text-orange-400/90 font-semibold flex items-center gap-1">
+                  Report a Bug / Feedback
+                </Link>
+              </li>
             </ul>
           </div>
 
