@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -15,12 +15,51 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
+import { cn } from '@/lib/utils';
 
 export function Header() {
   const { user, signOutUser, loading } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [currentQuery, setCurrentQuery] = useState('');
+
+  // Track active query parameters client-side to light up the active shortcut
+  useEffect(() => {
+    setCurrentQuery(window.location.search);
+
+    const updateQuery = (e?: Event) => {
+      if (e && 'detail' in e) {
+        const detailHref = (e as CustomEvent<string>).detail;
+        const q = detailHref.includes('?') ? '?' + detailHref.split('?')[1] : '';
+        setCurrentQuery(q);
+      } else {
+        setCurrentQuery(window.location.search);
+      }
+    };
+
+    window.addEventListener('vibespot:shortcut', updateQuery);
+    window.addEventListener('popstate', updateQuery);
+
+    return () => {
+      window.removeEventListener('vibespot:shortcut', updateQuery);
+      window.removeEventListener('popstate', updateQuery);
+    };
+  }, []);
+
+  // Instant 0ms shortcut click handler (bypasses slow Next.js RSC network fetch when already on home page)
+  const handleShortcutClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      window.history.pushState(null, '', href);
+      window.dispatchEvent(new CustomEvent('vibespot:shortcut', { detail: href }));
+    }
+  };
+
+  const isDiscoverActive = pathname === '/' && (!currentQuery || currentQuery === '?');
+  const isNearMeActive = pathname === '/' && currentQuery.includes('sort=distance_asc');
+  const isStudentFriendlyActive = pathname === '/' && currentQuery.includes('maxPrice=500');
+  const isCafeActive = pathname === '/' && (currentQuery.includes('Caf') || currentQuery.includes('category=Caf%C3%A9s'));
 
   // Hidden on dedicated full-screen auth pages if desired, or keep everywhere
   const isAuthPage = pathname.startsWith('/auth');
@@ -31,7 +70,11 @@ export function Header() {
         <div className="flex items-center justify-between h-16 sm:h-18">
           {/* Left: Brand & City */}
           <div className="flex items-center gap-3 sm:gap-6">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link
+              href="/"
+              onClick={(e) => handleShortcutClick(e, '/')}
+              className="flex items-center gap-2 group"
+            >
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
                 <Sparkles size={18} className="fill-white/20" />
               </div>
@@ -56,28 +99,42 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-stone-600">
             <Link
               href="/"
-              className={`hover:text-orange-600 transition-colors ${
-                pathname === '/' ? 'text-orange-600' : ''
-              }`}
+              onClick={(e) => handleShortcutClick(e, '/')}
+              className={cn(
+                'hover:text-orange-600 transition-colors',
+                isDiscoverActive ? 'text-orange-600 font-bold' : ''
+              )}
             >
               Discover
             </Link>
             <Link
               href="/?sort=distance_asc"
-              className="hover:text-orange-600 transition-colors flex items-center gap-1"
+              onClick={(e) => handleShortcutClick(e, '/?sort=distance_asc')}
+              className={cn(
+                'hover:text-orange-600 transition-colors flex items-center gap-1',
+                isNearMeActive ? 'text-orange-600 font-bold' : ''
+              )}
             >
               <Compass size={15} />
               Near Me
             </Link>
             <Link
               href="/?maxPrice=500"
-              className="hover:text-orange-600 transition-colors"
+              onClick={(e) => handleShortcutClick(e, '/?maxPrice=500')}
+              className={cn(
+                'hover:text-orange-600 transition-colors',
+                isStudentFriendlyActive ? 'text-orange-600 font-bold' : ''
+              )}
             >
               Student Friendly
             </Link>
             <Link
               href="/?category=Caf%C3%A9s"
-              className="hover:text-orange-600 transition-colors"
+              onClick={(e) => handleShortcutClick(e, '/?category=Caf%C3%A9s')}
+              className={cn(
+                'hover:text-orange-600 transition-colors',
+                isCafeActive ? 'text-orange-600 font-bold' : ''
+              )}
             >
               Cafés
             </Link>
@@ -175,32 +232,64 @@ export function Header() {
           <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-3 rounded-xl bg-stone-50 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleShortcutClick(e, '/');
+              }}
+              className={cn(
+                'p-3 rounded-xl transition-colors flex items-center gap-2',
+                isDiscoverActive
+                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
+                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+              )}
             >
               <Compass size={15} className="text-orange-500" />
               All Places
             </Link>
             <Link
               href="/?sort=distance_asc"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-3 rounded-xl bg-stone-50 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleShortcutClick(e, '/?sort=distance_asc');
+              }}
+              className={cn(
+                'p-3 rounded-xl transition-colors flex items-center gap-2',
+                isNearMeActive
+                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
+                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+              )}
             >
               <MapPin size={15} className="text-orange-500" />
               Near Me
             </Link>
             <Link
               href="/?maxPrice=500"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-3 rounded-xl bg-stone-50 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleShortcutClick(e, '/?maxPrice=500');
+              }}
+              className={cn(
+                'p-3 rounded-xl transition-colors flex items-center gap-2',
+                isStudentFriendlyActive
+                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
+                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+              )}
             >
               <Sparkles size={15} className="text-orange-500" />
               Budget Friendly
             </Link>
             <Link
               href="/?category=Caf%C3%A9s"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-3 rounded-xl bg-stone-50 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+              onClick={(e) => {
+                setMobileMenuOpen(false);
+                handleShortcutClick(e, '/?category=Caf%C3%A9s');
+              }}
+              className={cn(
+                'p-3 rounded-xl transition-colors flex items-center gap-2',
+                isCafeActive
+                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
+                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+              )}
             >
               <Sparkles size={15} className="text-orange-500" />
               Cafés & Hangouts

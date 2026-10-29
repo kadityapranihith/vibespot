@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Home, Compass, Coffee, User } from 'lucide-react';
@@ -11,37 +11,72 @@ function BottomNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const [currentQuery, setCurrentQuery] = useState('');
 
   // Hide on auth pages
   if (pathname.startsWith('/auth')) return null;
 
-  const currentCategory = searchParams?.get('category') || '';
-  const currentSort = searchParams?.get('sort') || '';
+  // Track active query parameters client-side for 0ms reactivity
+  useEffect(() => {
+    setCurrentQuery(window.location.search);
+
+    const updateQuery = (e?: Event) => {
+      if (e && 'detail' in e) {
+        const detailHref = (e as CustomEvent<string>).detail;
+        const q = detailHref.includes('?') ? '?' + detailHref.split('?')[1] : '';
+        setCurrentQuery(q);
+      } else {
+        setCurrentQuery(window.location.search);
+      }
+    };
+
+    window.addEventListener('vibespot:shortcut', updateQuery);
+    window.addEventListener('popstate', updateQuery);
+
+    return () => {
+      window.removeEventListener('vibespot:shortcut', updateQuery);
+      window.removeEventListener('popstate', updateQuery);
+    };
+  }, []);
+
+  const handleShortcutClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (pathname === '/' && (href.startsWith('/?') || href === '/')) {
+      e.preventDefault();
+      window.history.pushState(null, '', href);
+      window.dispatchEvent(new CustomEvent('vibespot:shortcut', { detail: href }));
+    }
+  };
+
+  const queryToUse = currentQuery || (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+  const isExploreActive = pathname === '/' && (!queryToUse || queryToUse === '?');
+  const isNearMeActive = pathname === '/' && queryToUse.includes('sort=distance_asc');
+  const isCafeActive = pathname === '/' && (queryToUse.includes('Caf') || queryToUse.includes('category=Caf%C3%A9s'));
+  const isAccountActive = pathname === '/account' || pathname.startsWith('/auth');
 
   const links = [
     {
       href: '/',
       label: 'Explore',
       icon: Home,
-      isActive: pathname === '/' && !currentCategory && !currentSort,
+      isActive: isExploreActive,
     },
     {
       href: '/?sort=distance_asc',
       label: 'Near Me',
       icon: Compass,
-      isActive: pathname === '/' && currentSort === 'distance_asc',
+      isActive: isNearMeActive,
     },
     {
       href: '/?category=Caf%C3%A9s',
       label: 'Cafés',
       icon: Coffee,
-      isActive: pathname === '/' && currentCategory.toLowerCase().startsWith('caf'),
+      isActive: isCafeActive,
     },
     {
       href: user ? '/account' : '/auth/login',
       label: user ? 'Account' : 'Sign In',
       icon: User,
-      isActive: pathname === '/account' || pathname.startsWith('/auth'),
+      isActive: isAccountActive,
     },
   ];
 
@@ -55,6 +90,7 @@ function BottomNavContent() {
           <Link
             key={label}
             href={href}
+            onClick={(e) => handleShortcutClick(e, href)}
             className={cn(
               'flex-1 flex flex-col items-center justify-center py-1 gap-1 select-none transition-colors',
               isActive ? 'text-orange-600' : 'text-stone-500 hover:text-stone-800'

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Search,
@@ -122,20 +122,57 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     }
   }, [location, sortOption]);
 
-  // Synchronize state when URL searchParams change (e.g. clicking header shortcut links)
-  useEffect(() => {
-    const newCat = searchParams.get('category') || 'All';
-    const newSearch = searchParams.get('q') || searchParams.get('search') || '';
-    const newTags = searchParams.get('tags') ? searchParams.get('tags')!.split(',').filter(Boolean) : [];
-    const newSort = (searchParams.get('sort') as SortOption) || (location ? 'distance_asc' : 'default');
-    const newMaxP = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : priceBounds.max;
+  // Apply URL parameters directly to state (independent shortcuts, no unintended intersections)
+  const applyUrlFilters = useCallback((params: URLSearchParams) => {
+    const newCat = params.get('category') || 'All';
+    const newSearch = params.get('q') || params.get('search') || '';
+    const newTags = params.get('tags') ? params.get('tags')!.split(',').filter(Boolean) : [];
+    const newSort = (params.get('sort') as SortOption) || (location ? 'distance_asc' : 'default');
+    const newMaxP = params.get('maxPrice') ? Number(params.get('maxPrice')) : priceBounds.max;
+    const newMinP = params.get('minPrice') ? Number(params.get('minPrice')) : priceBounds.min;
+    const newTagLogic = (params.get('tagLogic') as 'OR' | 'AND') || 'OR';
 
     setCategory(newCat);
     setSearch(newSearch);
     setSelectedTags(newTags);
-    if (searchParams.get('sort')) setSortOption(newSort);
-    if (searchParams.get('maxPrice')) setMaxPrice(newMaxP);
-  }, [searchParams, location, priceBounds.max]);
+    setTagLogic(newTagLogic);
+    setSortOption(newSort);
+    setMaxPrice(newMaxP);
+    setMinPrice(newMinP);
+  }, [location, priceBounds.max, priceBounds.min]);
+
+  // Synchronize state when Next.js router searchParams change
+  useEffect(() => {
+    applyUrlFilters(new URLSearchParams(searchParams.toString()));
+  }, [searchParams, applyUrlFilters]);
+
+  // Listen for instant 0ms in-page shortcut clicks and browser back/forward buttons
+  useEffect(() => {
+    const handleShortcut = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      const targetHref = customEvent.detail || window.location.href;
+      try {
+        const url = new URL(targetHref, window.location.origin);
+        applyUrlFilters(url.searchParams);
+      } catch {
+        // Fallback for relative strings
+        const queryPart = targetHref.includes('?') ? targetHref.split('?')[1] : '';
+        applyUrlFilters(new URLSearchParams(queryPart));
+      }
+    };
+
+    const handlePopState = () => {
+      applyUrlFilters(new URLSearchParams(window.location.search));
+    };
+
+    window.addEventListener('vibespot:shortcut', handleShortcut);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('vibespot:shortcut', handleShortcut);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [applyUrlFilters]);
 
   // Sync state to URL search parameters for back-navigation preservation
   useEffect(() => {
