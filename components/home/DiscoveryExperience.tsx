@@ -642,8 +642,9 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
           {/* Price-for-two filter */}
           <div className="flex-1 max-w-xl">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                Price for two
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+                <span>Price for two</span>
+                <span className="text-[10px] font-normal lowercase text-stone-400">(*approx. estimate)</span>
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
@@ -710,6 +711,10 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                 </button>
               ))}
             </div>
+
+            <p className="text-[10px] text-stone-400 mt-2 italic">
+              *Note: Prices shown are approximate estimates for two people and not 100% fixed values. Actual bills may vary by menu selection.
+            </p>
           </div>
 
           {/* Sorting Dropdown & Results Counter */}

@@ -150,9 +150,9 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
                 <span className="text-2xl font-black text-orange-600">
                   {place.price_per_two ? formatPrice(place.price_per_two) : 'Not listed'}
                 </span>
-                <span className="text-xs text-stone-500 block mt-0.5">
-                  Approx. estimated bill
-                </span>
+                <p className="text-[11px] text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg px-2.5 py-1.5 mt-2 leading-relaxed">
+                  *<strong>Estimated value only.</strong> Actual bill may vary depending on items ordered, quantity, and taxes.
+                </p>
               </div>
 
               {/* Category */}

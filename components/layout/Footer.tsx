@@ -60,8 +60,11 @@ export function Footer() {
           {/* Transparency & Community */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-stone-200 mb-3">
-              Transparency
+              Transparency & Pricing
             </h4>
+            <p className="text-xs text-stone-400 leading-relaxed mb-3">
+              *<strong>Price for two:</strong> Estimated average costs based on typical orders, not 100% fixed amounts. Actual restaurant bills vary.
+            </p>
             <p className="text-xs text-stone-400 leading-relaxed mb-3">
               Distances calculated via straight-line Haversine formula based on your GPS location.
             </p>

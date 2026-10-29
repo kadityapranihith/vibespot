@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/firebase/auth-context';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { FeedbackButton } from '@/components/ui/FeedbackButton';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
           <BottomNav />
+          <FeedbackButton />
         </AuthProvider>
       </body>
     </html>

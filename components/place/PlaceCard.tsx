@@ -113,7 +113,7 @@ export function PlaceCard({ place, userCoords, returnQuery }: PlaceCardProps) {
           <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
             <div className="text-xs">
               <span className="text-stone-400 block text-[10px] uppercase font-semibold tracking-wider">
-                Price for two
+                Price for two <span className="lowercase font-normal text-stone-400">(*estimate)</span>
               </span>
               <span className="font-bold text-stone-900 text-sm">
                 {place.price_per_two ? (
