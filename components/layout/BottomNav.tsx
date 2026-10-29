@@ -13,9 +13,6 @@ function BottomNavContent() {
   const { user } = useAuth();
   const [currentQuery, setCurrentQuery] = useState('');
 
-  // Hide on auth pages
-  if (pathname.startsWith('/auth')) return null;
-
   // Track active query parameters client-side for 0ms reactivity
   useEffect(() => {
     setCurrentQuery(window.location.search);
@@ -38,6 +35,9 @@ function BottomNavContent() {
       window.removeEventListener('popstate', updateQuery);
     };
   }, []);
+
+  // Hide on auth pages (placed AFTER all hooks to obey React Rules of Hooks)
+  if (pathname.startsWith('/auth')) return null;
 
   const handleShortcutClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (pathname === '/' && (href.startsWith('/?') || href === '/')) {
