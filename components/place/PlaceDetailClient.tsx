@@ -105,6 +105,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
             category={place.category}
             imageUrl={place.image_url}
             className="w-full h-full"
+            showName={false}
             priority
           />
 

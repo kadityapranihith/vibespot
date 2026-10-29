@@ -19,6 +19,9 @@ interface PlaceImageProps {
   imageUrl?: string | null;
   className?: string;
   priority?: boolean;
+  /** Show the place name inside the placeholder graphic. Default: true.
+   *  Set to false when the parent already renders the name as an overlay. */
+  showName?: boolean;
 }
 
 export function PlaceImage({
@@ -27,6 +30,7 @@ export function PlaceImage({
   imageUrl,
   className = '',
   priority = false,
+  showName = true,
 }: PlaceImageProps) {
   const [imgError, setImgError] = useState(false);
 
@@ -149,14 +153,16 @@ export function PlaceImage({
       </div>
 
       {/* Bottom row: Place Name & Kakinada signature */}
-      <div className="relative z-10">
-        <p className="text-xs uppercase tracking-widest text-white/60 font-semibold mb-1">
-          Kakinada Food Spot
-        </p>
-        <p className="text-xl font-bold tracking-tight text-white line-clamp-1 group-hover:text-orange-200 transition-colors">
-          {name}
-        </p>
-      </div>
+      {showName && (
+        <div className="relative z-10">
+          <p className="text-xs uppercase tracking-widest text-white/60 font-semibold mb-1">
+            Kakinada Food Spot
+          </p>
+          <p className="text-xl font-bold tracking-tight text-white line-clamp-1 group-hover:text-orange-200 transition-colors">
+            {name}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
