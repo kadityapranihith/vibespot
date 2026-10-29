@@ -210,6 +210,10 @@ export function getFirebaseErrorMessage(code: string): string {
     'auth/popup-closed-by-user': 'Sign-in window was closed before completion.',
     'auth/popup-blocked': 'Sign-in popup was blocked by your browser. Please allow popups for this site.',
     'auth/network-request-failed': 'Network error. Please check your internet connection.',
+    'auth/operation-not-allowed': 'Email/Password sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method and enable Email/Password.',
+    'auth/api-key-not-valid.': 'Firebase API key is invalid or restricted in Google Cloud Console. Check Firebase Project settings.',
+    'auth/invalid-api-key': 'Firebase API key is invalid. Please verify the Web API Key in Firebase Project settings.',
+    'auth/unauthorized-domain': 'This domain is not authorized in Firebase Console > Authentication > Settings > Authorized domains.',
   };
-  return messages[code] || 'An unexpected error occurred. Please try again.';
+  return messages[code] || (code ? `Authentication error (${code}). Please check Firebase Console.` : 'An unexpected error occurred. Please try again.');
 }

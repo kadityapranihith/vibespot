@@ -37,6 +37,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
       router.push(decodeURIComponent(redirect));
     } catch (err: unknown) {
+      console.error('Firebase Auth error details:', err);
       const code = (err as { code?: string })?.code || '';
       setError(getFirebaseErrorMessage(code));
     } finally {
@@ -51,6 +52,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       await signInWithGoogle();
       router.push(decodeURIComponent(redirect));
     } catch (err: unknown) {
+      console.error('Firebase Auth error details:', err);
       const code = (err as { code?: string })?.code || '';
       setError(getFirebaseErrorMessage(code));
     } finally {
