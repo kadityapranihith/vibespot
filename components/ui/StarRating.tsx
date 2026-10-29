@@ -38,7 +38,11 @@ export function StarRating({
           onClick={() => onChange?.(star)}
           onMouseEnter={() => !readonly && setHovered(star)}
           onMouseLeave={() => !readonly && setHovered(null)}
-          className={readonly ? 'cursor-default' : 'cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-[#ff5722] rounded'}
+          className={
+            readonly
+              ? 'cursor-default'
+              : 'cursor-pointer p-1.5 sm:p-1 touch-manipulation transition-transform active:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-md'
+          }
           aria-label={readonly ? undefined : `${star} star${star !== 1 ? 's' : ''}`}
         >
           <Star
