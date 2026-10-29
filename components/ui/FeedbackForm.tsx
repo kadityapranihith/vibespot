@@ -295,3 +295,4 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
     </form>
   );
 }
+
