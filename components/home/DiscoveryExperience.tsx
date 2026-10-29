@@ -122,6 +122,21 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     }
   }, [location, sortOption]);
 
+  // Synchronize state when URL searchParams change (e.g. clicking header shortcut links)
+  useEffect(() => {
+    const newCat = searchParams.get('category') || 'All';
+    const newSearch = searchParams.get('q') || searchParams.get('search') || '';
+    const newTags = searchParams.get('tags') ? searchParams.get('tags')!.split(',').filter(Boolean) : [];
+    const newSort = (searchParams.get('sort') as SortOption) || (location ? 'distance_asc' : 'default');
+    const newMaxP = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : priceBounds.max;
+
+    setCategory(newCat);
+    setSearch(newSearch);
+    setSelectedTags(newTags);
+    if (searchParams.get('sort')) setSortOption(newSort);
+    if (searchParams.get('maxPrice')) setMaxPrice(newMaxP);
+  }, [searchParams, location, priceBounds.max]);
+
   // Sync state to URL search parameters for back-navigation preservation
   useEffect(() => {
     const params = new URLSearchParams();
