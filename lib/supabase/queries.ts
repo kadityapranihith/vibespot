@@ -7,13 +7,14 @@ interface PlaceWithSummaryRaw extends Omit<Place, 'avg_price_rating' | 'avg_ambi
   place_rating_summary?: PlaceRatingSummary[] | PlaceRatingSummary | null;
 }
 
-function cleanPlace(raw: Place): Place {
+function cleanPlace(raw: any): Place {
   let cat = raw.category;
   if (cat && cat.toLowerCase().includes('caf')) {
     cat = 'Cafés';
   }
   return {
     ...raw,
+    id: String(raw.id),
     category: cat,
     tags: normalizeTags(raw.tags),
     latitude: raw.latitude !== null && raw.latitude !== undefined ? Number(raw.latitude) : null,
@@ -28,45 +29,44 @@ export async function getPublishedPlaces(): Promise<Place[]> {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('places')
-      .select(`
-        *,
-        place_rating_summary (
-          avg_price_rating,
-          avg_ambience,
-          avg_food_quality,
-          rating_count
-        )
-      `)
-      .eq('is_published', true)
-      .order('name', { ascending: true });
+    const [placesRes, summaryRes] = await Promise.all([
+      supabase
+        .from('places')
+        .select('*')
+        .eq('is_published', true)
+        .order('name', { ascending: true }),
+      supabase
+        .from('place_rating_summary')
+        .select('*'),
+    ]);
 
-    if (error || !data || data.length === 0) {
-      console.warn('Supabase query returned empty/error, using sample places fallback:', error?.message);
+    if (placesRes.error || !placesRes.data || placesRes.data.length === 0) {
+      console.warn('Supabase query returned empty/error, using sample places fallback:', placesRes.error?.message);
       return SAMPLE_PLACES.map(cleanPlace);
     }
 
-    const rows = data as unknown as PlaceWithSummaryRaw[];
+    const summaryMap = new Map<string, PlaceRatingSummary>();
+    if (summaryRes.data) {
+      for (const s of summaryRes.data as PlaceRatingSummary[]) {
+        summaryMap.set(String(s.place_id), s);
+      }
+    }
 
-    return rows.map((place) => {
-      const { place_rating_summary: rawSummary, ...rest } = place;
-      const summary = Array.isArray(rawSummary) 
-        ? rawSummary[0] 
-        : rawSummary ?? null;
-
-      let cat = rest.category;
+    return placesRes.data.map((place: any) => {
+      const summary = summaryMap.get(String(place.id));
+      let cat = place.category;
       if (cat && cat.toLowerCase().includes('caf')) {
         cat = 'Cafés';
       }
 
       return {
-        ...rest,
+        ...place,
+        id: String(place.id),
         category: cat,
-        tags: normalizeTags(rest.tags),
-        latitude: rest.latitude !== null && rest.latitude !== undefined ? Number(rest.latitude) : null,
-        longitude: rest.longitude !== null && rest.longitude !== undefined ? Number(rest.longitude) : null,
-        price_per_two: rest.price_per_two !== null && rest.price_per_two !== undefined ? Number(rest.price_per_two) : null,
+        tags: normalizeTags(place.tags),
+        latitude: place.latitude !== null && place.latitude !== undefined ? Number(place.latitude) : null,
+        longitude: place.longitude !== null && place.longitude !== undefined ? Number(place.longitude) : null,
+        price_per_two: place.price_per_two !== null && place.price_per_two !== undefined ? Number(place.price_per_two) : null,
         avg_price_rating: summary?.avg_price_rating ?? null,
         avg_ambience: summary?.avg_ambience ?? null,
         avg_food_quality: summary?.avg_food_quality ?? null,
@@ -80,50 +80,47 @@ export async function getPublishedPlaces(): Promise<Place[]> {
 }
 
 export async function getPlaceById(id: string): Promise<Place | null> {
-  const sample = SAMPLE_PLACES.find((p) => p.id === id);
+  const sample = SAMPLE_PLACES.find((p) => String(p.id) === String(id));
 
   if (!isSupabaseConfigured()) {
     return sample ? cleanPlace(sample) : null;
   }
 
   try {
-    const { data, error } = await supabase
-      .from('places')
-      .select(`
-        *,
-        place_rating_summary (
-          avg_price_rating,
-          avg_ambience,
-          avg_food_quality,
-          rating_count
-        )
-      `)
-      .eq('id', id)
-      .eq('is_published', true)
-      .single();
+    const [placeRes, summaryRes] = await Promise.all([
+      supabase
+        .from('places')
+        .select('*')
+        .eq('id', id)
+        .eq('is_published', true)
+        .single(),
+      supabase
+        .from('place_rating_summary')
+        .select('*')
+        .eq('place_id', id)
+        .maybeSingle(),
+    ]);
 
-    if (error || !data) {
+    if (placeRes.error || !placeRes.data) {
       return sample ? cleanPlace(sample) : null;
     }
 
-    const rawPlace = data as unknown as PlaceWithSummaryRaw;
-    const { place_rating_summary: rawSummary, ...rest } = rawPlace;
-    const summary = Array.isArray(rawSummary)
-      ? rawSummary[0]
-      : rawSummary ?? null;
+    const place = placeRes.data;
+    const summary = summaryRes.data as PlaceRatingSummary | null;
 
-    let cat = rest.category;
+    let cat = place.category;
     if (cat && cat.toLowerCase().includes('caf')) {
       cat = 'Cafés';
     }
 
     return {
-      ...rest,
+      ...place,
+      id: String(place.id),
       category: cat,
-      tags: normalizeTags(rest.tags),
-      latitude: rest.latitude !== null && rest.latitude !== undefined ? Number(rest.latitude) : null,
-      longitude: rest.longitude !== null && rest.longitude !== undefined ? Number(rest.longitude) : null,
-      price_per_two: rest.price_per_two !== null && rest.price_per_two !== undefined ? Number(rest.price_per_two) : null,
+      tags: normalizeTags(place.tags),
+      latitude: place.latitude !== null && place.latitude !== undefined ? Number(place.latitude) : null,
+      longitude: place.longitude !== null && place.longitude !== undefined ? Number(place.longitude) : null,
+      price_per_two: place.price_per_two !== null && place.price_per_two !== undefined ? Number(place.price_per_two) : null,
       avg_price_rating: summary?.avg_price_rating ?? null,
       avg_ambience: summary?.avg_ambience ?? null,
       avg_food_quality: summary?.avg_food_quality ?? null,
