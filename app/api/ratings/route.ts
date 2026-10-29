@@ -86,22 +86,7 @@ export async function POST(request: NextRequest) {
     }
     const token = authHeader.substring(7);
 
-    // 2. Check if Firebase Admin environment variables exist
-    if (
-      !process.env.FIREBASE_ADMIN_PROJECT_ID ||
-      !process.env.FIREBASE_ADMIN_CLIENT_EMAIL ||
-      !process.env.FIREBASE_ADMIN_PRIVATE_KEY
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            'Firebase Admin credentials not configured on server. Please add FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY to .env.local.',
-        },
-        { status: 503 }
-      );
-    }
-
-    // 3. Verify token with Firebase Admin and extract UID
+    // 2. Verify token and derive user identity
     let decoded;
     try {
       decoded = await verifyIdToken(token);

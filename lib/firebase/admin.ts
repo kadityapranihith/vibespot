@@ -1,32 +1,48 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+/**
+ * Firebase Token Verification for Server Routes
+ *
+ * Uses the Google Identity Toolkit REST API to verify Firebase ID tokens.
+ * This runs natively in any Node.js, Edge, or Serverless runtime (Vercel/AWS Lambda)
+ * without requiring heavy SDKs or encountering CommonJS/ESM bundler incompatibilities.
+ */
 
-function initAdmin() {
-  if (getApps().length > 0) return getApps()[0];
-
-  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-  let privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
-  if (privateKey) {
-    // Strip optional surrounding quotes and convert literal \n to actual newlines
-    privateKey = privateKey.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
-  }
-
-  if (!projectId || !clientEmail || !privateKey) {
-    throw new Error('Missing Firebase Admin environment variables');
-  }
-
-  return initializeApp({
-    credential: cert({ projectId, clientEmail, privateKey }),
-  });
+export interface DecodedUserToken {
+  uid: string;
+  email?: string;
+  emailVerified?: boolean;
 }
 
-export function getAdminAuth() {
-  initAdmin();
-  return getAuth();
-}
+export async function verifyIdToken(token: string): Promise<DecodedUserToken> {
+  const apiKey =
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
+    process.env.FIREBASE_API_KEY;
 
-export async function verifyIdToken(token: string) {
-  const adminAuth = getAdminAuth();
-  return adminAuth.verifyIdToken(token);
+  if (!apiKey) {
+    throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY is not configured on server');
+  }
+
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ idToken: token }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || data.error || !data.users || data.users.length === 0) {
+    const errorMsg = data.error?.message || 'Invalid or expired Firebase ID token';
+    throw new Error(errorMsg);
+  }
+
+  const user = data.users[0];
+  return {
+    uid: user.localId as string,
+    email: user.email as string | undefined,
+    emailVerified: Boolean(user.emailVerified),
+  };
 }
