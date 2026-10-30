@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { FeedbackButton } from '@/components/ui/FeedbackButton';
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       )}
       <body className={`${dmSans.className} antialiased bg-[#faf8f5] text-stone-900 min-h-screen flex flex-col`}>
         <AuthProvider>
+          <AnalyticsTracker />
           <Header />
           <main className="flex-1 pb-16 md:pb-0">
             {children}

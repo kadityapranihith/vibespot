@@ -25,6 +25,7 @@ import {
   TrendingUp,
   SlidersHorizontal,
   MessageSquarePlus,
+  BarChart3,
   Mail,
   User,
   Clock,
@@ -35,6 +36,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { PlaceEditModal, AdminPlace } from '@/components/admin/PlaceEditModal';
+import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { CATEGORIES } from '@/types';
 import { formatPrice, normalizeTags } from '@/lib/utils';
 
@@ -53,8 +55,8 @@ export default function AdminDashboardPage() {
   const { user, isAdmin, loading, getIdToken } = useAuth();
   const router = useRouter();
 
-  // Active top-level Tab: 'spots' or 'feedback'
-  const [activeTab, setActiveTab] = useState<'spots' | 'feedback'>('spots');
+  // Active top-level Tab: 'spots', 'feedback', or 'analytics'
+  const [activeTab, setActiveTab] = useState<'spots' | 'feedback' | 'analytics'>('spots');
 
   // Spots State
   const [places, setPlaces] = useState<AdminPlace[]>([]);
@@ -562,6 +564,19 @@ export default function AdminDashboardPage() {
                   {newFeedbackCount} new
                 </span>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'analytics'
+                  ? 'bg-orange-600 text-white shadow-sm shadow-orange-500/30'
+                  : 'bg-white/10 hover:bg-white/15 text-stone-300'
+              }`}
+            >
+              <BarChart3 size={14} />
+              <span>Analytics & Traffic</span>
             </button>
           </div>
         </div>
@@ -1193,6 +1208,13 @@ export default function AdminDashboardPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: ANALYTICS & TRAFFIC                                               */}
+        {/* ========================================================================= */}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboard getIdToken={getIdToken} />
         )}
       </div>
 
