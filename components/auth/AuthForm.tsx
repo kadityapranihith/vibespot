@@ -47,7 +47,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         `Password reset email sent to ${forgotEmail.trim()}! Please check your inbox and spam folder.`
       );
     } catch (err: unknown) {
-      console.error('Password reset error:', err);
+      console.warn('Password reset warning:', err);
       const code = (err as { code?: string })?.code || '';
       if (code === 'auth/user-not-found') {
         setForgotError('No account found with this email address.');
@@ -73,7 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
       router.push(decodeURIComponent(redirect));
     } catch (err: unknown) {
-      console.error('Firebase Auth error details:', err);
+      console.warn('Firebase Auth sign-in/sign-up attempt failed:', err);
       const code = (err as { code?: string })?.code || '';
       setError(getFirebaseErrorMessage(code));
     } finally {
@@ -88,7 +88,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       await signInWithGoogle();
       router.push(decodeURIComponent(redirect));
     } catch (err: unknown) {
-      console.error('Firebase Auth error details:', err);
+      console.warn('Firebase Auth Google attempt failed:', err);
       const code = (err as { code?: string })?.code || '';
       setError(getFirebaseErrorMessage(code));
     } finally {
