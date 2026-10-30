@@ -202,7 +202,7 @@ export function getFirebaseErrorMessage(code: string): string {
   const messages: Record<string, string> = {
     'auth/user-not-found': 'No account found with this email address.',
     'auth/wrong-password': 'Incorrect password. Please try again.',
-    'auth/invalid-credential': 'Incorrect email or password. If you forgot your password, click "Forgot password?" below.',
+    'auth/invalid-credential': 'Incorrect email or password.',
     'auth/email-already-in-use': 'An account with this email already exists.',
     'auth/weak-password': 'Password should be at least 6 characters.',
     'auth/invalid-email': 'Please enter a valid email address.',
