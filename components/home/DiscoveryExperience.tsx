@@ -9,6 +9,7 @@ import {
   Navigation,
   RotateCcw,
   Sparkles,
+  MapPin,
   Compass,
   ArrowUpDown,
   Coffee,
@@ -346,6 +347,12 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
       <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-amber-50/30 to-transparent pt-10 pb-8 sm:pt-14 sm:pb-12 border-b border-orange-100/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
+            {/* City indicator badge */}
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-xs mb-3">
+              <MapPin size={13} className="text-orange-500 fill-orange-500" />
+              <span>Kakinada, Andhra Pradesh</span>
+            </div>
+
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-[1.1]">
               Find your next <br className="hidden sm:block" />
               <span className="text-orange-600 logo-script font-bold">favourite food spot</span> in Kakinada.
