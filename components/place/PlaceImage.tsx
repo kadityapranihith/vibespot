@@ -131,12 +131,14 @@ export function PlaceImage({
         }}
       />
 
-      {/* Top row: Sparkles accent indicator */}
-      <div className="relative z-10 flex items-center justify-end">
-        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/80">
-          <Sparkles size={14} className={theme.accent} />
+      {/* Top row: Sparkles accent indicator (when used as standalone placeholder) */}
+      {showName && (
+        <div className="relative z-10 flex items-center justify-end">
+          <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/80">
+            <Sparkles size={14} className={theme.accent} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Center watermark icon */}
       <div className="absolute -right-3 -bottom-3 text-white/5 pointer-events-none">

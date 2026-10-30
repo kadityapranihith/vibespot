@@ -99,7 +99,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
 
       {/* Hero Visual Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 min-h-[220px] sm:min-h-[280px] aspect-[16/10] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
+        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 min-h-[240px] sm:min-h-[300px] aspect-[16/10] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
           <PlaceImage
             name={place.name}
             category={place.category}
@@ -109,28 +109,39 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
             priority
           />
 
-          {/* Overlay info */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-10 text-white">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-600 text-white shadow-sm">
-                {place.category}
-              </span>
-              {distanceKm !== null && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-black/60 backdrop-blur-md text-orange-200 border border-white/20">
-                  <Navigation size={12} className="text-orange-400 rotate-45" />
-                  {formatDistance(distanceKm)} (straight-line)
+          {/* Evenly distributed Overlay info */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/30 to-black/25 flex flex-col justify-between p-6 sm:p-10 text-white">
+            {/* Top row: Category tag & Distance badge */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-orange-600 text-white shadow-md tracking-wide">
+                  {place.category}
                 </span>
-              )}
+                {distanceKm !== null && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-black/60 backdrop-blur-md text-orange-200 border border-white/20">
+                    <Navigation size={12} className="text-orange-400 rotate-45" />
+                    {formatDistance(distanceKm)} (straight-line)
+                  </span>
+                )}
+              </div>
+
+              {/* Sparkles accent indicator */}
+              <div className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0">
+                <Sparkles size={14} />
+              </div>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-              {place.name}
-            </h1>
+            {/* Bottom row: Place Name & Address */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+                {place.name}
+              </h1>
 
-            <p className="mt-2 text-stone-300 text-xs sm:text-sm flex items-center gap-1.5 max-w-2xl">
-              <MapPin size={14} className="text-orange-400 shrink-0" />
-              <span>{place.address}</span>
-            </p>
+              <p className="text-stone-300 text-xs sm:text-sm flex items-center gap-1.5 max-w-2xl leading-relaxed">
+                <MapPin size={14} className="text-orange-400 shrink-0" />
+                <span>{place.address}</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
