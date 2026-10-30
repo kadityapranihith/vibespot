@@ -8,10 +8,10 @@ import {
   MessageSquarePlus,
   Send,
   Mail,
-  X,
   Sparkles,
   CheckCircle,
-  Copy,
+  Loader2,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 
@@ -32,7 +32,8 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
   const [description, setDescription] = useState('');
   const [senderName, setSenderName] = useState('');
   const [senderEmail, setSenderEmail] = useState('');
-  const [copied, setCopied] = useState(false);
+
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
@@ -77,104 +78,87 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
 
   const currentTopic = topics.find((t) => t.id === topic)!;
 
-  const buildEmailContent = () => {
+  // Direct In-App Submit to Supabase
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!description.trim()) {
+      setError('Please describe your issue or idea before submitting.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic,
+          subject: subject.trim() || null,
+          description: description.trim(),
+          sender_name: senderName.trim() || null,
+          sender_email: senderEmail.trim() || null,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit feedback');
+
+      setSubmitted(true);
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error submitting feedback. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // WhatsApp helper
+  const handleOpenWhatsApp = () => {
+    const text = encodeURIComponent(
+      `Hi Aditya! [Vibespot ${currentTopic.label}]\n${subject ? `Subject: ${subject}\n` : ''}Details: ${description.trim()}`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
+
+  // Mailto fallback
+  const handleOpenMailto = () => {
     const fullSubject = `[Vibespot ${currentTopic.label}] ${subject.trim() || 'Community Feedback'}`;
-    const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://vibespot.vercel.app';
-
-    const fullBody = [
-      `Hi Aditya,`,
-      ``,
-      `Feedback Type: ${currentTopic.label} ${currentTopic.emoji}`,
-      `From: ${senderName ? `${senderName} (${senderEmail || 'No email provided'})` : senderEmail || 'Vibespot User'}`,
-      ``,
-      `Issue / Details:`,
-      `${description.trim()}`,
-      ``,
-      `---------------------------------------`,
-      `Sent via Vibespot Kakinada (Page: ${pageUrl})`,
-    ].join('\n');
-
-    return { fullSubject, fullBody };
-  };
-
-  const handleSendViaGmail = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim()) {
-      setError('Please describe your issue or idea before sending.');
-      return;
-    }
-    setError('');
-
-    const { fullSubject, fullBody } = buildEmailContent();
-
-    // Direct Web Gmail compose URL
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-      TARGET_EMAIL
-    )}&su=${encodeURIComponent(fullSubject)}&body=${encodeURIComponent(fullBody)}`;
-
-    window.open(gmailUrl, '_blank', 'noopener,noreferrer');
-    setSubmitted(true);
-    onSuccess?.();
-  };
-
-  const handleSendViaDefaultMail = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!description.trim()) {
-      setError('Please describe your issue or idea before sending.');
-      return;
-    }
-    setError('');
-
-    const { fullSubject, fullBody } = buildEmailContent();
-    const mailtoUrl = `mailto:${TARGET_EMAIL}?subject=${encodeURIComponent(
-      fullSubject
-    )}&body=${encodeURIComponent(fullBody)}`;
-
-    window.location.href = mailtoUrl;
-    setSubmitted(true);
-    onSuccess?.();
-  };
-
-  const handleCopyDetails = () => {
-    const { fullSubject, fullBody } = buildEmailContent();
-    navigator.clipboard.writeText(`To: ${TARGET_EMAIL}\nSubject: ${fullSubject}\n\n${fullBody}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    const fullBody = `Hi Aditya,\n\nFeedback Type: ${currentTopic.label}\nFrom: ${senderName || 'User'} (${senderEmail || 'N/A'})\n\nDetails:\n${description.trim()}`;
+    window.location.href = `mailto:${TARGET_EMAIL}?subject=${encodeURIComponent(fullSubject)}&body=${encodeURIComponent(fullBody)}`;
   };
 
   if (submitted) {
     return (
-      <div className="text-center py-8 px-4 bg-emerald-50/60 rounded-3xl border border-emerald-200/80">
-        <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/20">
+      <div className="text-center py-8 px-4 bg-emerald-50/70 rounded-3xl border border-emerald-200">
+        <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/25">
           <CheckCircle size={28} />
         </div>
         <h3 className="text-lg font-bold text-stone-900 mb-1">
-          Opening Your Email App!
+          Feedback Submitted Successfully!
         </h3>
-        <p className="text-xs text-stone-600 max-w-sm mx-auto mb-4 leading-relaxed">
-          Your feedback is addressed to <strong className="text-stone-900">{TARGET_EMAIL}</strong>. Simply hit <strong>Send</strong> in your mail client.
+        <p className="text-xs text-stone-600 max-w-sm mx-auto mb-5 leading-relaxed">
+          Thank you for helping improve Vibespot! Our team in Kakinada reviews all suggestions and bug reports.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-          <button
-            onClick={() => setSubmitted(false)}
-            className="text-xs font-bold text-orange-600 hover:text-orange-700 py-2 px-4"
-          >
-            Send another message
-          </button>
-          <button
-            onClick={handleCopyDetails}
-            className="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-stone-700 border border-stone-200 hover:bg-stone-50 py-2 px-3.5 rounded-xl shadow-2xs"
-          >
-            <Copy size={13} />
-            <span>{copied ? 'Copied to Clipboard!' : 'Copy Email Text'}</span>
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setSubmitted(false);
+            setSubject('');
+            setDescription('');
+          }}
+          className="text-xs font-bold bg-white text-stone-800 border border-stone-200 hover:bg-stone-50 py-2.5 px-5 rounded-xl shadow-2xs transition-colors"
+        >
+          Send Another Feedback
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSendViaGmail} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
       {error && (
         <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
           {error}
@@ -224,7 +208,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
         </div>
         <div>
           <label className="block text-[11px] font-bold text-stone-600 mb-1">
-            Your Email
+            Your Email (Optional)
           </label>
           <input
             type="email"
@@ -265,34 +249,45 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
         />
       </div>
 
-      <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3 text-[11px] text-stone-500 flex items-center gap-2">
-        <Mail size={14} className="text-orange-500 shrink-0" />
-        <span>
-          Recipient: <strong className="text-stone-800">{TARGET_EMAIL}</strong>
-        </span>
-      </div>
+      {/* Direct In-App Submit Button */}
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-bold py-3.5 px-4 rounded-xl shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
+      >
+        {submitting ? (
+          <>
+            <Loader2 size={15} className="animate-spin" />
+            <span>Sending feedback...</span>
+          </>
+        ) : (
+          <>
+            <Send size={14} />
+            <span>Submit Feedback</span>
+          </>
+        )}
+      </button>
 
-      {/* Action Buttons */}
-      <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
-        <button
-          type="submit"
-          className="w-full sm:flex-1 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-3 px-4 rounded-xl shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
-        >
-          <Send size={14} />
-          <span>Send via Gmail</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleSendViaDefaultMail}
-          className="w-full sm:w-auto bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold py-3 px-4 rounded-xl border border-stone-200 flex items-center justify-center gap-1.5 transition-colors"
-          title="Open your default device mail app"
-        >
-          <Mail size={14} />
-          <span>Default Mail App</span>
-        </button>
+      {/* Quick alternative channels */}
+      <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
+        <span>Need urgent response?</span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleOpenWhatsApp}
+            className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1"
+          >
+            <MessageCircle size={12} /> WhatsApp
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenMailto}
+            className="text-stone-600 hover:text-orange-600 font-bold flex items-center gap-1"
+          >
+            <Mail size={12} /> Email
+          </button>
+        </div>
       </div>
     </form>
   );
 }
-
