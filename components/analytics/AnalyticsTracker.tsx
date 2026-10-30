@@ -6,16 +6,35 @@ import { useAuth } from '@/lib/firebase/auth-context';
 
 export function AnalyticsTracker() {
   const pathname = usePathname();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const lastTrackedPath = useRef<string | null>(null);
 
   useEffect(() => {
-    // 1. Skip tracking if current user is an admin or browsing admin portal
+    // 0. Instant synchronous checks (0ms, prevents page-load race condition before Firebase initializes)
+    if (typeof window !== 'undefined') {
+      try {
+        if (localStorage.getItem('vb_opt_out_analytics') === 'true') {
+          return;
+        }
+      } catch {}
+
+      // Automatically ignore local development visits
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return;
+      }
+    }
+
+    // 1. Wait for Firebase Auth to finish resolving before deciding to track
+    if (loading) {
+      return;
+    }
+
+    // 2. Skip tracking if current user is an admin or browsing admin portal / api
     if (isAdmin || pathname?.startsWith('/admin') || pathname?.startsWith('/api')) {
       return;
     }
 
-    // 2. Prevent duplicate triggers on same path within same render cycle
+    // 3. Prevent duplicate triggers on same path within same render cycle
     if (lastTrackedPath.current === pathname) {
       return;
     }
@@ -59,7 +78,7 @@ export function AnalyticsTracker() {
     } catch {
       // Fire-and-forget
     }
-  }, [pathname, isAdmin]);
+  }, [pathname, isAdmin, loading]);
 
   return null;
 }

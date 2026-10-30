@@ -62,6 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOutUser = useCallback(async () => {
     if (!isFirebaseConfigured()) return;
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vb_opt_out_analytics');
+      }
+    } catch {}
     await signOut(auth);
   }, []);
 
@@ -77,6 +82,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isAdmin = useMemo(() => isUserAdmin(user?.email), [user?.email]);
+
+  // Synchronous analytics suppression cache for admin devices
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (isAdmin) {
+        localStorage.setItem('vb_opt_out_analytics', 'true');
+      } else if (!loading && !user) {
+        localStorage.removeItem('vb_opt_out_analytics');
+      }
+    } catch {
+      // Ignore in strict privacy modes
+    }
+  }, [isAdmin, loading, user]);
 
   const value = useMemo(
     () => ({
