@@ -99,7 +99,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
 
       {/* Hero Visual Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 min-h-[240px] sm:min-h-[300px] aspect-[16/10] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
+        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 min-h-[220px] sm:min-h-[280px] aspect-[16/10] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
           <PlaceImage
             name={place.name}
             category={place.category}
@@ -109,26 +109,19 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
             priority
           />
 
-          {/* Evenly distributed Overlay info */}
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/30 to-black/25 flex flex-col justify-between p-6 sm:p-10 text-white">
-            {/* Top row: Category tag & Distance badge */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-orange-600 text-white shadow-md tracking-wide">
-                  {place.category}
+          {/* Symmetrical, responsive Overlay info */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/35 to-black/25 flex flex-col justify-between p-5 sm:p-8 md:p-10 text-white">
+            {/* Top row: Category tag & Distance badge (balanced left-aligned) */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-block px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-orange-600 text-white shadow-sm max-w-fit">
+                {place.category}
+              </span>
+              {distanceKm !== null && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-black/60 backdrop-blur-md text-orange-200 border border-white/20">
+                  <Navigation size={11} className="text-orange-400 rotate-45" />
+                  {formatDistance(distanceKm)} (straight-line)
                 </span>
-                {distanceKm !== null && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-black/60 backdrop-blur-md text-orange-200 border border-white/20">
-                    <Navigation size={12} className="text-orange-400 rotate-45" />
-                    {formatDistance(distanceKm)} (straight-line)
-                  </span>
-                )}
-              </div>
-
-              {/* Sparkles accent indicator */}
-              <div className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0">
-                <Sparkles size={14} />
-              </div>
+              )}
             </div>
 
             {/* Bottom row: Place Name & Address */}
@@ -152,36 +145,38 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
           {/* Left 2 Columns: Overview, Map, Tags */}
           <div className="lg:col-span-2 space-y-8">
             {/* Quick Metrics Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {/* Price for two */}
-              <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col justify-between">
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 truncate">
                       Price for Two
                     </span>
-                    <span className="text-[10px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-semibold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded-md shrink-0">
                       Estimated
                     </span>
                   </div>
-                  <span className="text-2xl font-black text-orange-600 block">
+                  <span className="text-xl sm:text-2xl font-black text-orange-600 block">
                     {place.price_per_two ? formatPrice(place.price_per_two) : 'Not listed'}
                   </span>
                 </div>
-                <p className="text-[11px] text-stone-500 mt-2">
-                  Estimated value (2 main courses + 1 starter + 2 beverages)
+                <p className="text-[10px] sm:text-[11px] text-stone-500 mt-2 leading-tight">
+                  2 mains + 1 starter + 2 drinks
                 </p>
               </div>
 
               {/* Category */}
-              <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Food Category
-                </span>
-                <span className="text-base font-bold text-stone-900 block truncate">
-                  {place.category}
-                </span>
-                <span className="text-xs text-stone-500 block mt-0.5">
+              <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
+                    Food Category
+                  </span>
+                  <span className="text-sm sm:text-base font-bold text-stone-900 block line-clamp-2 leading-snug">
+                    {place.category}
+                  </span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-stone-500 block mt-2">
                   Kakinada spot
                 </span>
               </div>
