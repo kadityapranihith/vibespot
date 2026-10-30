@@ -19,13 +19,12 @@ import {
   Cake,
   CupSoda,
   Check,
-  ChevronDown,
-  ChevronUp,
   AlertCircle,
   Filter,
 } from 'lucide-react';
 import type { Place, SortOption } from '@/types';
 import { PlaceCard } from '@/components/place/PlaceCard';
+import { FilterModal } from '@/components/home/FilterModal';
 import { useUserLocation } from '@/lib/hooks/useUserLocation';
 import {
   calculateDistanceKm,
@@ -65,27 +64,16 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     [initialPlaces]
   );
 
-  // Curated prominent tags (standardized vibe tags first)
-  const popularVibeTags = useMemo(() => {
-    const priority = [
-      'Student-Friendly',
-      'Budget-Friendly',
-      'Café & Hangout',
-      'Pure Vegetarian',
-      'Non-Veg Options',
-      'Biryani & Rice',
-      'Burgers & Fast Food',
-      'Buffet & Grills',
-      'South Indian & Tiffin',
-      'Tea & Coffee',
-      'Bakery & Desserts',
-      'Quick Snacks & Street Food',
-      'Pizza',
-    ];
-    const availablePriority = priority.filter((p) => allDynamicTags.includes(p));
-    const remainder = allDynamicTags.filter((t) => !priority.includes(t));
-    return [...availablePriority, ...remainder];
-  }, [allDynamicTags]);
+  // Pure vegetarian tag matcher
+  const vegTag = useMemo(
+    () =>
+      allDynamicTags.find(
+        (t) =>
+          t.toLowerCase() === 'pure vegetarian' ||
+          t.toLowerCase() === 'pure veg'
+      ) || 'Pure Vegetarian',
+    [allDynamicTags]
+  );
 
   // Parse initial state from URL search params
   const paramSearch = searchParams.get('q') || searchParams.get('search') || '';
@@ -100,7 +88,9 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
   const paramMinPrice = searchParams.get('minPrice')
     ? Number(searchParams.get('minPrice'))
     : priceBounds.min;
-  const paramSort = (searchParams.get('sort') as SortOption) || 'default';
+  const paramSort =
+    (searchParams.get('sort') as SortOption) ||
+    (location ? 'distance_asc' : 'default');
 
   // Filter States
   const [search, setSearch] = useState(paramSearch);
@@ -111,9 +101,8 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
   const [maxPrice, setMaxPrice] = useState<number>(paramMaxPrice);
   const [sortOption, setSortOption] = useState<SortOption>(paramSort);
 
-  // Compact tag expansion state
-  const [isTagsExpanded, setIsTagsExpanded] = useState(false);
-  const [tagSearchInput, setTagSearchInput] = useState('');
+  // Filter Modal state
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   // Auto-switch to distance sorting when location is granted if user hasn't explicitly selected another sort
   useEffect(() => {
@@ -128,48 +117,36 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     const newSearch = params.get('q') || params.get('search') || '';
     const newTags = params.get('tags') ? params.get('tags')!.split(',').filter(Boolean) : [];
     const newSort = (params.get('sort') as SortOption) || (location ? 'distance_asc' : 'default');
-    const newMaxP = params.get('maxPrice') ? Number(params.get('maxPrice')) : priceBounds.max;
-    const newMinP = params.get('minPrice') ? Number(params.get('minPrice')) : priceBounds.min;
+    const newMaxPrice = params.get('maxPrice') ? Number(params.get('maxPrice')) : priceBounds.max;
+    const newMinPrice = params.get('minPrice') ? Number(params.get('minPrice')) : priceBounds.min;
     const newTagLogic = (params.get('tagLogic') as 'OR' | 'AND') || 'OR';
 
     setCategory(newCat);
     setSearch(newSearch);
     setSelectedTags(newTags);
-    setTagLogic(newTagLogic);
     setSortOption(newSort);
-    setMaxPrice(newMaxP);
-    setMinPrice(newMinP);
-  }, [location, priceBounds.max, priceBounds.min]);
+    setMaxPrice(newMaxPrice);
+    setMinPrice(newMinPrice);
+    setTagLogic(newTagLogic);
+  }, [location, priceBounds]);
 
-  // Synchronize state when Next.js router searchParams change
+  // Listen to custom header shortcut events & popstate (browser back/forward)
   useEffect(() => {
-    applyUrlFilters(new URLSearchParams(searchParams.toString()));
-  }, [searchParams, applyUrlFilters]);
-
-  // Listen for instant 0ms in-page shortcut clicks and browser back/forward buttons
-  useEffect(() => {
-    const handleShortcut = (e: Event) => {
-      const customEvent = e as CustomEvent<string>;
-      const targetHref = customEvent.detail || window.location.href;
-      try {
-        const url = new URL(targetHref, window.location.origin);
-        applyUrlFilters(url.searchParams);
-      } catch {
-        // Fallback for relative strings
-        const queryPart = targetHref.includes('?') ? targetHref.split('?')[1] : '';
-        applyUrlFilters(new URLSearchParams(queryPart));
-      }
+    const handleShortcut = (e: CustomEvent<string>) => {
+      const url = new URL(e.detail, window.location.origin);
+      applyUrlFilters(url.searchParams);
     };
 
     const handlePopState = () => {
-      applyUrlFilters(new URLSearchParams(window.location.search));
+      const params = new URLSearchParams(window.location.search);
+      applyUrlFilters(params);
     };
 
-    window.addEventListener('vibespot:shortcut', handleShortcut);
+    window.addEventListener('vibespot:shortcut', handleShortcut as EventListener);
     window.addEventListener('popstate', handlePopState);
 
     return () => {
-      window.removeEventListener('vibespot:shortcut', handleShortcut);
+      window.removeEventListener('vibespot:shortcut', handleShortcut as EventListener);
       window.removeEventListener('popstate', handlePopState);
     };
   }, [applyUrlFilters]);
@@ -183,7 +160,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     if (tagLogic !== 'OR') params.set('tagLogic', tagLogic);
     if (maxPrice < priceBounds.max) params.set('maxPrice', String(maxPrice));
     if (minPrice > priceBounds.min) params.set('minPrice', String(minPrice));
-    if (sortOption !== 'default') params.set('sort', sortOption);
+    if (sortOption !== (location ? 'distance_asc' : 'default')) params.set('sort', sortOption);
 
     const queryString = params.toString();
     const newUrl = queryString ? `/?${queryString}` : '/';
@@ -191,7 +168,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', newUrl);
     }
-  }, [search, category, selectedTags, tagLogic, minPrice, maxPrice, sortOption, priceBounds]);
+  }, [search, category, selectedTags, tagLogic, minPrice, maxPrice, sortOption, priceBounds, location]);
 
   // Current return query string to pass to PlaceCard for preserving filters
   const currentReturnQuery = useMemo(() => {
@@ -202,9 +179,9 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     if (tagLogic !== 'OR') params.set('tagLogic', tagLogic);
     if (maxPrice < priceBounds.max) params.set('maxPrice', String(maxPrice));
     if (minPrice > priceBounds.min) params.set('minPrice', String(minPrice));
-    if (sortOption !== 'default') params.set('sort', sortOption);
+    if (sortOption !== (location ? 'distance_asc' : 'default')) params.set('sort', sortOption);
     return params.toString();
-  }, [search, category, selectedTags, tagLogic, minPrice, maxPrice, sortOption, priceBounds]);
+  }, [search, category, selectedTags, tagLogic, minPrice, maxPrice, sortOption, priceBounds, location]);
 
   // Tag selection toggler
   const toggleTag = (tag: string) => {
@@ -221,7 +198,6 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     setMinPrice(priceBounds.min);
     setMaxPrice(priceBounds.max);
     setSortOption(location ? 'distance_asc' : 'default');
-    setTagSearchInput('');
   };
 
   // Check if any non-default filters are active
@@ -230,7 +206,17 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     category !== 'All' ||
     selectedTags.length > 0 ||
     maxPrice < priceBounds.max ||
-    minPrice > priceBounds.min;
+    minPrice > priceBounds.min ||
+    sortOption !== (location ? 'distance_asc' : 'default');
+
+  // Count active modal filters (tags, price range, non-default sort)
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedTags.length > 0) count += selectedTags.length;
+    if (maxPrice < priceBounds.max || minPrice > priceBounds.min) count += 1;
+    if (sortOption !== (location ? 'distance_asc' : 'default')) count += 1;
+    return count;
+  }, [selectedTags, maxPrice, minPrice, priceBounds, sortOption, location]);
 
   // Filter & Sort calculation
   const processedPlaces = useMemo(() => {
@@ -304,25 +290,24 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
         if (!hasA && hasB) return 1;
         return a.name.localeCompare(b.name);
       });
+    } else if (sortOption === 'rating_desc') {
+      sorted.sort((a, b) => {
+        const ratingA = getOverallRating(a.avg_food_quality, a.avg_ambience, a.avg_price_rating) || 0;
+        const ratingB = getOverallRating(b.avg_food_quality, b.avg_ambience, b.avg_price_rating) || 0;
+        if (ratingB !== ratingA) return ratingB - ratingA;
+        return (b.rating_count || 0) - (a.rating_count || 0);
+      });
     } else if (sortOption === 'price_asc') {
       sorted.sort((a, b) => {
-        const pA = a.price_per_two ?? Infinity;
-        const pB = b.price_per_two ?? Infinity;
-        return pA - pB;
+        const priceA = a.price_per_two ?? 999999;
+        const priceB = b.price_per_two ?? 999999;
+        return priceA - priceB;
       });
     } else if (sortOption === 'price_desc') {
       sorted.sort((a, b) => {
-        const pA = a.price_per_two ?? -1;
-        const pB = b.price_per_two ?? -1;
-        return pB - pA;
-      });
-    } else if (sortOption === 'rating_desc') {
-      sorted.sort((a, b) => {
-        const rA =
-          getOverallRating(a.avg_price_rating, a.avg_ambience, a.avg_food_quality) ?? 0;
-        const rB =
-          getOverallRating(b.avg_price_rating, b.avg_ambience, b.avg_food_quality) ?? 0;
-        return rB - rA;
+        const priceA = a.price_per_two ?? 0;
+        const priceB = b.price_per_two ?? 0;
+        return priceB - priceA;
       });
     } else if (sortOption === 'name_asc') {
       sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -354,20 +339,6 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     return UtensilsCrossed;
   };
 
-  // Compact tag view: show first 12 tags + selected tags when collapsed; show full search list when expanded
-  const displayedTags = useMemo(() => {
-    if (isTagsExpanded) {
-      if (!tagSearchInput.trim()) return allDynamicTags;
-      return allDynamicTags.filter((t) =>
-        t.toLowerCase().includes(tagSearchInput.trim().toLowerCase())
-      );
-    }
-    // Collapsed: show top 13 vibe tags + any currently selected tags that are not in top 13
-    const top = popularVibeTags.slice(0, 13);
-    const extraSelected = selectedTags.filter((t) => !top.includes(t));
-    return [...top, ...extraSelected];
-  }, [isTagsExpanded, tagSearchInput, allDynamicTags, popularVibeTags, selectedTags]);
-
   return (
     <div className="w-full">
       {/* ========================================================= */}
@@ -377,7 +348,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             {/* City indicator badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-xs mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-xs mb-3">
               <MapPin size={13} className="text-orange-500 fill-orange-500" />
               <span>Kakinada, Andhra Pradesh</span>
             </div>
@@ -387,12 +358,13 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               <span className="text-orange-600 logo-script font-bold">favourite spot</span> in Kakinada.
             </h1>
 
-            <p className="mt-3 sm:mt-4 text-stone-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-              Explore 54 curated restaurants, cafés, and quick bites in Kakinada. Filter by budget, ambience, dietary preferences, and straight-line distance.
+            {/* Shortened & Crisp Subheader */}
+            <p className="mt-2.5 sm:mt-3 text-stone-600 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+              54 handpicked eateries &amp; cafés across Kakinada
             </p>
 
             {/* Prominent Search Field */}
-            <div className="mt-6 sm:mt-8 relative max-w-2xl mx-auto">
+            <div className="mt-6 sm:mt-7 relative max-w-2xl mx-auto">
               <div className="relative flex items-center bg-white rounded-2xl shadow-md shadow-orange-500/5 border border-stone-200 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 transition-all">
                 <Search size={20} className="text-stone-400 ml-4 shrink-0" />
                 <input
@@ -400,7 +372,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search spots by name, area (e.g. Bhanugudi), category, or cravings..."
-                  className="w-full py-4 pl-3 pr-10 bg-transparent text-sm sm:text-base text-stone-900 placeholder-stone-400 focus:outline-none"
+                  className="w-full py-3.5 sm:py-4 pl-3 pr-10 bg-transparent text-sm sm:text-base text-stone-900 placeholder-stone-400 focus:outline-none"
                   aria-label="Search restaurants in Kakinada"
                 />
                 {search && (
@@ -416,12 +388,12 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
             </div>
 
             {/* Geolocation Banner / CTA */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 text-xs">
               {locationStatus === 'granted' && location ? (
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
                   <Navigation size={13} className="text-emerald-600 rotate-45" />
                   <span>
-                    Location active • Places sorted by straight-line distance
+                    Location active • Places sorted by nearest distance
                   </span>
                   <button
                     onClick={() => refreshLocation()}
@@ -446,18 +418,18 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                 <button
                   onClick={() => requestLocation()}
                   disabled={locationStatus === 'requesting'}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-stone-900 hover:bg-stone-800 text-white font-bold transition-all shadow-sm group hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-white font-bold transition-all shadow-xs group hover:scale-[1.02]"
                 >
                   <Navigation
-                    size={14}
+                    size={13}
                     className={`text-orange-400 rotate-45 group-hover:text-orange-300 ${
                       locationStatus === 'requesting' ? 'animate-spin' : ''
                     }`}
                   />
                   <span>
                     {locationStatus === 'requesting'
-                      ? 'Detecting your coordinates...'
-                      : 'Sort by Nearest (Use My Location)'}
+                      ? 'Detecting coordinates...'
+                      : 'Sort by Nearest (Use GPS)'}
                   </span>
                 </button>
               )}
@@ -469,25 +441,36 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
       {/* Main Discovery Body */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20">
         {/* ========================================================= */}
-        {/* SECTION C: DYNAMIC CATEGORY FILTERS                       */}
+        {/* SLEEK CATEGORY & FILTER TOOLBAR                            */}
         {/* ========================================================= */}
-        <section className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-              Browse by Category
-            </h2>
-            {category !== 'All' && (
-              <button
-                onClick={() => setCategory('All')}
-                className="text-xs font-bold text-orange-600 hover:text-orange-700"
-              >
-                Reset to All
-              </button>
-            )}
-          </div>
-
-          {/* Horizontally scrollable category chips */}
+        <section className="mb-6 space-y-3">
+          {/* Main Controls Row: Filter Button + Category chips + Quick shortcuts */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+            {/* 1. Sleek Filter Modal Trigger Button */}
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border shadow-xs ${
+                activeFilterCount > 0
+                  ? 'bg-stone-900 text-white border-stone-900 shadow-stone-900/15 scale-[1.02]'
+                  : 'bg-white text-stone-700 hover:bg-stone-100 border-stone-200'
+              }`}
+              aria-label="Open filter options"
+            >
+              <SlidersHorizontal
+                size={14}
+                className={activeFilterCount > 0 ? 'text-orange-400' : 'text-orange-600'}
+              />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="w-5 h-5 rounded-full bg-orange-600 text-white text-[10px] font-black flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            <div className="h-6 w-px bg-stone-200 shrink-0 mx-0.5" />
+
+            {/* 2. Category Chips Carousel */}
             {dynamicCategories.map((cat) => {
               const isSelected = category === cat;
               const Icon = getCategoryIcon(cat);
@@ -495,7 +478,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
-                  className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 ${
+                  className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
                     isSelected
                       ? 'bg-orange-600 text-white shadow-sm shadow-orange-500/25 scale-[1.02]'
                       : 'bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border border-stone-200'
@@ -503,303 +486,166 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                   aria-pressed={isSelected}
                 >
                   <Icon
-                    size={14}
+                    size={13}
                     className={isSelected ? 'text-white' : 'text-orange-500'}
                   />
                   <span>{cat}</span>
                 </button>
               );
             })}
-          </div>
-        </section>
 
-        {/* ========================================================= */}
-        {/* SECTION D: COMPACT & ORGANIZED TAG FILTERS                */}
-        {/* ========================================================= */}
-        <section className="mb-8 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                Filter by Vibe & Diet
-              </h2>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                {allDynamicTags.length} tags
-              </span>
-            </div>
+            <div className="h-6 w-px bg-stone-200 shrink-0 mx-0.5" />
 
-            {/* Tag Logic Selector (OR default) + Clear tags */}
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl">
-                <span className="text-[11px] font-medium text-stone-500 pl-1">Match:</span>
-                <button
-                  onClick={() => setTagLogic('OR')}
-                  className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all ${
-                    tagLogic === 'OR'
-                      ? 'bg-white text-orange-600 shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                  title="Show places matching ANY of the selected tags"
-                >
-                  ANY (OR)
-                </button>
-                <button
-                  onClick={() => setTagLogic('AND')}
-                  className={`px-2 py-1 rounded-lg font-bold text-[11px] transition-all ${
-                    tagLogic === 'AND'
-                      ? 'bg-white text-orange-600 shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                  title="Show places matching ALL selected tags"
-                >
-                  ALL (AND)
-                </button>
-              </div>
+            {/* 3. Quick 1-Tap Filter Pills */}
+            <button
+              onClick={() => toggleTag(vegTag)}
+              className={`inline-flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border ${
+                selectedTags.includes(vegTag)
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                  : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
+              }`}
+            >
+              <span>🌱 Pure Veg</span>
+            </button>
 
-              {selectedTags.length > 0 && (
-                <button
-                  onClick={() => setSelectedTags([])}
-                  className="font-bold text-orange-600 hover:text-orange-700 transition-colors"
-                >
-                  Clear tags ({selectedTags.length})
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Quick search when expanded */}
-          {isTagsExpanded && (
-            <div className="mb-3 relative max-w-sm">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input
-                type="text"
-                value={tagSearchInput}
-                onChange={(e) => setTagSearchInput(e.target.value)}
-                placeholder="Search specific tags (e.g. Mandi, Chinese)..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-orange-500 text-stone-800"
-              />
-            </div>
-          )}
-
-          {/* Compact Chips Grid */}
-          <div className="flex flex-wrap gap-1.5">
-            {displayedTags.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all select-none ${
-                    isSelected
-                      ? 'bg-stone-900 text-white shadow-xs'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200 hover:text-stone-900'
-                  }`}
-                  aria-pressed={isSelected}
-                >
-                  {isSelected && <Check size={12} className="text-orange-400 stroke-[3]" />}
-                  <span>{tag}</span>
-                </button>
-              );
-            })}
-
-            {/* Expand / Collapse Toggle Button */}
             <button
               onClick={() => {
-                setIsTagsExpanded(!isTagsExpanded);
-                if (isTagsExpanded) setTagSearchInput('');
+                if (maxPrice === 400 && minPrice === priceBounds.min) {
+                  setMaxPrice(priceBounds.max);
+                } else {
+                  setMinPrice(priceBounds.min);
+                  setMaxPrice(400);
+                }
               }}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors select-none"
+              className={`inline-flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border ${
+                maxPrice === 400 && minPrice === priceBounds.min
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
+                  : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
+              }`}
             >
-              {isTagsExpanded ? (
-                <>
-                  <span>Show fewer</span>
-                  <ChevronUp size={13} />
-                </>
-              ) : (
-                <>
-                  <span>+ {allDynamicTags.length - 13} more tags</span>
-                  <ChevronDown size={13} />
-                </>
-              )}
+              <span>💰 Under ₹400</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (sortOption === 'rating_desc') {
+                  setSortOption(location ? 'distance_asc' : 'default');
+                } else {
+                  setSortOption('rating_desc');
+                }
+              }}
+              className={`inline-flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border ${
+                sortOption === 'rating_desc'
+                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                  : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
+              }`}
+            >
+              <span>⭐ Top Rated</span>
             </button>
           </div>
 
-          <div className="mt-3 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-            <span>
-              {tagLogic === 'OR'
-                ? '💡 Matching spots have at least one of your selected tags.'
-                : '💡 Matching spots must have all of your selected tags.'}
-            </span>
-            <span className="font-semibold text-stone-600">
-              {selectedTags.length} selected
-            </span>
-          </div>
-        </section>
-
-        {/* ========================================================= */}
-        {/* SECTION 5: PRICE-FOR-TWO & DISCOVERY CONTROLS ROW        */}
-        {/* ========================================================= */}
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs">
-          {/* Price-for-two filter */}
-          <div className="flex-1 max-w-xl">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-                <span>Price for two</span>
-                <span className="text-[10px] font-normal lowercase text-stone-400">(*approx. estimate)</span>
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
-                  {maxPrice >= priceBounds.max && minPrice <= priceBounds.min
-                    ? `Any price (up to ${formatPrice(priceBounds.max)})`
-                    : `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}`}
-                </span>
-                {(maxPrice < priceBounds.max || minPrice > priceBounds.min) && (
-                  <button
-                    onClick={() => {
-                      setMinPrice(priceBounds.min);
-                      setMaxPrice(priceBounds.max);
-                    }}
-                    className="text-stone-400 hover:text-stone-600 text-xs font-bold"
-                    title="Reset price range"
-                  >
-                    <RotateCcw size={12} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Slider */}
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-semibold text-stone-400">
-                {formatPrice(priceBounds.min)}
-              </span>
-              <input
-                type="range"
-                min={priceBounds.min}
-                max={priceBounds.max}
-                step={50}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
-                aria-label="Filter maximum price for two"
-              />
-              <span className="text-[11px] font-semibold text-stone-400">
-                {formatPrice(priceBounds.max)}
-              </span>
-            </div>
-
-            {/* Quick Price Preset Chips */}
-            <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
-              {[
-                { label: 'All', max: priceBounds.max },
-                { label: 'Under ₹400', max: 400 },
-                { label: 'Under ₹750', max: 750 },
-                { label: 'Under ₹1,200', max: 1200 },
-              ].map((preset) => (
-                <button
-                  key={preset.label}
-                  onClick={() => {
-                    setMinPrice(priceBounds.min);
-                    setMaxPrice(preset.max);
-                  }}
-                  className={`text-[11px] font-bold px-2.5 py-1 rounded-md transition-all ${
-                    maxPrice === preset.max && minPrice === priceBounds.min
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-[10px] text-stone-400 mt-2 italic">
-              *Note: Prices shown are approximate estimates for two people and not 100% fixed values. Actual bills may vary by menu selection.
-            </p>
-          </div>
-
-          {/* Sorting Dropdown & Results Counter */}
-          <div className="flex items-center gap-3 border-t md:border-t-0 md:border-l border-stone-100 pt-3 md:pt-0 md:pl-5">
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <label
-                htmlFor="sort-select"
-                className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1"
-              >
-                <ArrowUpDown size={12} />
-                Sort By
-              </label>
-              <select
-                id="sort-select"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-xs font-bold text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-              >
-                {location && (
-                  <option value="distance_asc">📍 Nearest Distance (GPS)</option>
-                )}
-                <option value="default">✨ Recommended</option>
-                <option value="rating_desc">⭐ Highest Rated</option>
-                <option value="price_asc">💰 Price: Low to High</option>
-                <option value="price_desc">💎 Price: High to Low</option>
-                <option value="name_asc">🔤 Alphabetical (A-Z)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Results Header: Active Filter Pills & Results Count */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-              {processedPlaces.length}{' '}
-              <span className="font-semibold text-stone-500 text-base sm:text-lg">
-                {processedPlaces.length === 1 ? 'place to explore' : 'places to explore'}
-              </span>
-            </h2>
-
-            {/* Clear all active filters button */}
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors ml-2"
-              >
-                <X size={12} />
-                Reset all
-              </button>
-            )}
-          </div>
-
-          {/* Active summary badges */}
+          {/* Active Summary Badges (Only displayed when any filters are active) */}
           {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mr-1">
+                Active:
+              </span>
               {search && (
-                <span className="inline-flex items-center gap-1 bg-stone-100 px-2.5 py-1 rounded-md font-medium text-stone-700">
+                <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-700 px-2.5 py-1 rounded-lg font-medium">
                   Search: &quot;{search}&quot;
-                  <button onClick={() => setSearch('')}><X size={12} /></button>
+                  <button onClick={() => setSearch('')} className="hover:text-stone-900">
+                    <X size={12} />
+                  </button>
                 </span>
               )}
               {category !== 'All' && (
-                <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 px-2.5 py-1 rounded-md font-medium">
+                <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 px-2.5 py-1 rounded-lg font-medium">
                   {category}
-                  <button onClick={() => setCategory('All')}><X size={12} /></button>
+                  <button onClick={() => setCategory('All')} className="hover:text-orange-950">
+                    <X size={12} />
+                  </button>
                 </span>
               )}
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 bg-stone-800 text-white px-2.5 py-1 rounded-md font-medium"
+                  className="inline-flex items-center gap-1 bg-stone-800 text-white px-2.5 py-1 rounded-lg font-medium"
                 >
                   {tag}
-                  <button onClick={() => toggleTag(tag)}><X size={12} /></button>
+                  <button onClick={() => toggleTag(tag)} className="hover:text-stone-300">
+                    <X size={12} />
+                  </button>
                 </span>
               ))}
-              {maxPrice < priceBounds.max && (
-                <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 px-2.5 py-1 rounded-md font-medium">
-                  Up to {formatPrice(maxPrice)}
-                  <button onClick={() => setMaxPrice(priceBounds.max)}><X size={12} /></button>
+              {(maxPrice < priceBounds.max || minPrice > priceBounds.min) && (
+                <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 px-2.5 py-1 rounded-lg font-medium">
+                  {minPrice > priceBounds.min ? `${formatPrice(minPrice)} – ` : 'Up to '}
+                  {formatPrice(maxPrice)}
+                  <button
+                    onClick={() => {
+                      setMinPrice(priceBounds.min);
+                      setMaxPrice(priceBounds.max);
+                    }}
+                    className="hover:text-amber-950"
+                  >
+                    <X size={12} />
+                  </button>
                 </span>
               )}
+              {sortOption !== (location ? 'distance_asc' : 'default') && (
+                <span className="inline-flex items-center gap-1 bg-sky-100 text-sky-800 px-2.5 py-1 rounded-lg font-medium">
+                  Sorted:{' '}
+                  {sortOption === 'rating_desc'
+                    ? 'Top Rated'
+                    : sortOption === 'price_asc'
+                    ? 'Price: Low-High'
+                    : sortOption === 'price_desc'
+                    ? 'Price: High-Low'
+                    : 'A-Z'}
+                  <button
+                    onClick={() => setSortOption(location ? 'distance_asc' : 'default')}
+                    className="hover:text-sky-950"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+              <button
+                onClick={resetFilters}
+                className="text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline ml-2"
+              >
+                Clear all
+              </button>
             </div>
           )}
+        </section>
+
+        {/* Results Header: Count & Sort Quick Selector */}
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <h2 className="text-lg sm:text-xl font-black text-stone-900 tracking-tight">
+            {processedPlaces.length}{' '}
+            <span className="font-semibold text-stone-500 text-sm sm:text-base">
+              {processedPlaces.length === 1 ? 'spot found' : 'spots to explore'}
+            </span>
+          </h2>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-stone-400 hidden sm:inline">Sort:</span>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              className="bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-700 focus:outline-none shadow-2xs cursor-pointer"
+            >
+              {location && (
+                <option value="distance_asc">📍 Nearest First</option>
+              )}
+              <option value="default">✨ Recommended</option>
+              <option value="rating_desc">⭐ Top Rated</option>
+              <option value="price_asc">💰 Budget (Low-High)</option>
+              <option value="price_desc">💎 Premium (High-Low)</option>
+              <option value="name_asc">🔤 A to Z</option>
+            </select>
+          </div>
         </div>
 
         {/* ========================================================= */}
@@ -838,6 +684,29 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
           </div>
         )}
       </div>
+
+      {/* Filter Modal Sheet */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        hasLocation={Boolean(location)}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
+        setMinPrice={setMinPrice}
+        setMaxPrice={setMaxPrice}
+        priceBounds={priceBounds}
+        selectedTags={selectedTags}
+        toggleTag={toggleTag}
+        setSelectedTags={setSelectedTags}
+        tagLogic={tagLogic}
+        setTagLogic={setTagLogic}
+        allDynamicTags={allDynamicTags}
+        resultsCount={processedPlaces.length}
+        resetFilters={resetFilters}
+        activeFilterCount={activeFilterCount}
+      />
     </div>
   );
 }
