@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Loader2, Sparkles, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Sparkles, ArrowLeft, KeyRound, CheckCircle2, X, Mail } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 import { isFirebaseConfigured } from '@/lib/firebase/config';
 import { getFirebaseErrorMessage } from '@/lib/utils';
@@ -20,10 +20,46 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  // Forgot Password modal state
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  const [forgotError, setForgotError] = useState('');
+
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setForgotError('Please enter your email address.');
+      return;
+    }
+    setForgotLoading(true);
+    setForgotError('');
+    setForgotSuccess('');
+    try {
+      await resetPassword(forgotEmail.trim());
+      setForgotSuccess(
+        `Password reset email sent to ${forgotEmail.trim()}! Please check your inbox and spam folder.`
+      );
+    } catch (err: unknown) {
+      console.error('Password reset error:', err);
+      const code = (err as { code?: string })?.code || '';
+      if (code === 'auth/user-not-found') {
+        setForgotError('No account found with this email address.');
+      } else if (code === 'auth/invalid-email') {
+        setForgotError('Please enter a valid email address.');
+      } else {
+        setForgotError(getFirebaseErrorMessage(code));
+      }
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,9 +154,25 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-xs font-bold text-stone-700 mb-1.5">
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label htmlFor="password" className="block text-xs font-bold text-stone-700">
+              Password
+            </label>
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotModalOpen(true);
+                  setForgotEmail(email);
+                  setForgotSuccess('');
+                  setForgotError('');
+                }}
+                className="text-[11px] font-bold text-orange-600 hover:text-orange-700 hover:underline"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
           <div className="relative">
             <input
               id="password"
@@ -221,6 +273,103 @@ export function AuthForm({ mode }: AuthFormProps) {
           </>
         )}
       </p>
+
+      {/* Forgot Password Modal */}
+      {isForgotModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full border border-stone-200 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+                  <KeyRound size={18} />
+                </div>
+                <h3 className="text-base font-black text-stone-900">
+                  Reset Password
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Enter your registered email address below. We will send a secure Google Firebase link to reset your password.
+            </p>
+
+            {forgotSuccess ? (
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold text-emerald-900">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Reset Link Sent!</span>
+                </div>
+                <p className="leading-relaxed">{forgotSuccess}</p>
+                <button
+                  type="button"
+                  onClick={() => setIsForgotModalOpen(false)}
+                  className="w-full mt-2 py-2 bg-white text-emerald-800 border border-emerald-300 rounded-xl font-bold hover:bg-emerald-100/50 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-3">
+                {forgotError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                    {forgotError}
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="forgot-email" className="block text-xs font-bold text-stone-700 mb-1">
+                    Your Email
+                  </label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    required
+                    placeholder="you@domain.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotModalOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-orange-500/25 disabled:opacity-50"
+                  >
+                    {forgotLoading ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" />
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={13} />
+                        <span>Send Link</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

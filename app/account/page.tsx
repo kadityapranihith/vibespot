@@ -15,6 +15,8 @@ import {
   Loader2,
   ExternalLink,
   RotateCcw,
+  KeyRound,
+  CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { StarRating } from '@/components/ui/StarRating';
@@ -36,11 +38,34 @@ interface UserRatingItem {
 }
 
 export default function AccountPage() {
-  const { user, isAdmin, loading, signOutUser, getIdToken } = useAuth();
+  const { user, isAdmin, loading, signOutUser, getIdToken, resetPassword } = useAuth();
   const router = useRouter();
 
   const [ratings, setRatings] = useState<UserRatingItem[]>([]);
   const [loadingRatings, setLoadingRatings] = useState(true);
+
+  // Password reset state
+  const [sendingReset, setSendingReset] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState('');
+  const [resetError, setResetError] = useState('');
+
+  const handleSendPasswordReset = async () => {
+    if (!user?.email) return;
+    setSendingReset(true);
+    setResetError('');
+    setResetSuccess('');
+    try {
+      await resetPassword(user.email);
+      setResetSuccess(
+        `Password reset email sent to ${user.email}! Please check your inbox and spam folder.`
+      );
+    } catch (err: unknown) {
+      console.error('Password reset error:', err);
+      setResetError('Failed to send password reset email. Please try again.');
+    } finally {
+      setSendingReset(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -164,6 +189,57 @@ export default function AccountPage() {
               </Link>
             </div>
           )}
+
+          {/* Account Security & Password */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-orange-600 shrink-0 mt-0.5 shadow-2xs">
+                  <KeyRound size={18} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-stone-900">
+                    Password &amp; Security
+                  </h3>
+                  <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
+                    Update your password. We will send a secure password reset link to your registered email (<code>{user.email}</code>).
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendPasswordReset}
+                disabled={sendingReset}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-stone-100 text-stone-800 border border-stone-200 transition-all hover:scale-[1.02] shrink-0 shadow-2xs disabled:opacity-50"
+              >
+                {sendingReset ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin text-orange-600" />
+                    <span>Sending email...</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail size={13} className="text-orange-600" />
+                    <span>Send Reset Email</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {resetSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                <span>{resetSuccess}</span>
+              </div>
+            )}
+
+            {resetError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
+                {resetError}
+              </div>
+            )}
+          </div>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
             <Link
