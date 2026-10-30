@@ -474,3 +474,4 @@ export function AnalyticsDashboard({ getIdToken }: AnalyticsDashboardProps) {
     </div>
   );
 }
+
