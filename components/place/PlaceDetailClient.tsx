@@ -99,7 +99,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
 
       {/* Hero Visual Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 aspect-[16/9] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
+        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-stone-200 min-h-[220px] sm:min-h-[280px] aspect-[16/10] sm:aspect-[21/9] max-h-[460px] bg-stone-900">
           <PlaceImage
             name={place.name}
             category={place.category}
@@ -110,7 +110,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
           />
 
           {/* Overlay info */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-10 text-white">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 sm:p-10 text-white">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-600 text-white shadow-sm">
                 {place.category}

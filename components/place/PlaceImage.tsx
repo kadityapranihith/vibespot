@@ -11,7 +11,6 @@ import {
   CupSoda,
   Sparkles,
 } from 'lucide-react';
-import { CATEGORY_SHORT } from '@/types';
 
 interface PlaceImageProps {
   name: string;
@@ -39,8 +38,6 @@ export function PlaceImage({
     Boolean(imageUrl) &&
     imageUrl !== '/images/placeholder-restaurant.jpg' &&
     imageUrl !== '/images/placeholder-restaurant.png';
-
-  const shortCategory = CATEGORY_SHORT[category] || category;
 
   // Category visual themes
   const getTheme = () => {
@@ -134,14 +131,8 @@ export function PlaceImage({
         }}
       />
 
-      {/* Top row: Category tag & icon */}
-      <div className="relative z-10 flex items-center justify-between">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide border backdrop-blur-sm ${theme.badge}`}
-        >
-          <Icon size={12} className={theme.accent} />
-          {shortCategory}
-        </span>
+      {/* Top row: Sparkles accent indicator */}
+      <div className="relative z-10 flex items-center justify-end">
         <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/80">
           <Sparkles size={14} className={theme.accent} />
         </div>
