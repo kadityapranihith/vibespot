@@ -37,8 +37,8 @@ import {
 } from 'lucide-react';
 import { PlaceEditModal, AdminPlace } from '@/components/admin/PlaceEditModal';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
-import { CATEGORIES } from '@/types';
-import { formatPrice, normalizeTags } from '@/lib/utils';
+import { CATEGORIES, STANDARDIZED_TAGS } from '@/types';
+import { formatPrice, normalizeTags, extractUniqueTags } from '@/lib/utils';
 
 export interface FeedbackItem {
   id: number;
@@ -324,6 +324,15 @@ export default function AdminDashboardPage() {
       return true;
     });
   }, [places, search, selectedCategory, statusFilter]);
+
+  // Tags matching the discovery filter modal + any custom tags from existing places
+  const availableFilterTags = useMemo(() => {
+    const extracted = extractUniqueTags(
+      places.map((p) => ({ ...p, id: String(p.id) } as any))
+    );
+    const merged = Array.from(new Set([...STANDARDIZED_TAGS, ...extracted]));
+    return merged.sort((a, b) => a.localeCompare(b));
+  }, [places]);
 
   // Filtered feedback calculation
   const filteredFeedback = useMemo(() => {
@@ -1222,6 +1231,7 @@ export default function AdminDashboardPage() {
       <PlaceEditModal
         isOpen={isModalOpen}
         place={editingPlace}
+        availableTags={availableFilterTags}
         onClose={() => {
           setIsModalOpen(false);
           setEditingPlace(null);

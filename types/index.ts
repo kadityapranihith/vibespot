@@ -91,3 +91,23 @@ export const CATEGORY_SHORT: Record<string, string> = {
   'Tea, Coffee & Juice': 'Tea & Juice',
   'Bakeries, Sweets, Desserts & Ice Cream': 'Sweets',
 };
+
+export const STANDARDIZED_TAGS = [
+  'Bakery & Desserts',
+  'Biryani & Rice',
+  'Budget-Friendly',
+  'Buffet & Grills',
+  'Burgers & Fast Food',
+  'Café & Hangout',
+  'Indian & Multi-Cuisine',
+  'Non-Veg Options',
+  'Pizza',
+  'Pure Vegetarian',
+  'Quick Snacks & Street Food',
+  'South Indian & Tiffin',
+  'Student-Friendly',
+  'Tea & Coffee',
+] as const;
+
+export type StandardizedTag = (typeof STANDARDIZED_TAGS)[number];
+

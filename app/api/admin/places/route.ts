@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         ? Number(longitude)
         : null,
       maps_url: maps_url ? String(maps_url).trim() : null,
-      tags: Array.isArray(tags) ? tags.filter(Boolean) : [],
+      tags: normalizeTags(tags).join(', '),
       is_published: Boolean(is_published),
       created_at: new Date().toISOString(),
     };
@@ -177,7 +177,7 @@ export async function PATCH(request: NextRequest) {
         : Number(updates.longitude);
     }
     if (updates.tags !== undefined) {
-      cleanUpdates.tags = Array.isArray(updates.tags) ? updates.tags.filter(Boolean) : [];
+      cleanUpdates.tags = normalizeTags(updates.tags).join(', ');
     }
 
     const supabaseAdmin = getSupabaseAdmin();

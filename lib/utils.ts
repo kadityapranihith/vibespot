@@ -114,27 +114,67 @@ export function formatDistance(distanceKm: number | null | undefined): string | 
 }
 
 /**
- * Normalize tags array from text[] or comma-separated string
+ * Normalize tags from string[], JSON string, Postgres array string, or comma-separated string
  */
 export function normalizeTags(tags: string[] | string | null | undefined): string[] {
   if (!tags) return [];
-  const list = Array.isArray(tags)
-    ? tags
-    : typeof tags === 'string'
-    ? tags.split(',')
-    : [];
+
+  let rawList: any[] = [];
+
+  if (Array.isArray(tags)) {
+    rawList = tags;
+  } else if (typeof tags === 'string') {
+    const trimmed = tags.trim();
+    if (!trimmed) return [];
+
+    // Case 1: JSON array string like '["Desserts & Shakes", "Late Night"]'
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          rawList = parsed;
+        } else {
+          rawList = [parsed];
+        }
+      } catch {
+        rawList = trimmed.slice(1, -1).split(',');
+      }
+    }
+    // Case 2: Postgres array string like '{"Desserts & Shakes", "Late Night"}'
+    else if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      rawList = trimmed.slice(1, -1).split(',');
+    }
+    // Case 3: Comma-separated string like 'Desserts & Shakes, Late Night'
+    else {
+      rawList = trimmed.split(',');
+    }
+  }
 
   const seen = new Set<string>();
   const result: string[] = [];
 
-  for (const item of list) {
+  for (const item of rawList) {
+    if (item === null || item === undefined) continue;
     let clean = String(item).trim();
+
+    // Strip any surrounding quotes or brackets if present in raw string
+    clean = clean.replace(/^[\[{\"\']+|[\]}\"\']+$/g, '').trim();
     if (!clean) continue;
-    // Normalize character quirks
-    if (clean.toLowerCase() === 'cafe') clean = 'Café';
-    if (clean.toLowerCase().includes('caf') && clean.toLowerCase().includes('hangout')) {
+
+    // Normalize character quirks and standardize naming
+    const lower = clean.toLowerCase();
+    if (lower === 'cafe') {
+      clean = 'Café';
+    } else if (lower.includes('caf') && lower.includes('hangout')) {
       clean = 'Café & Hangout';
+    } else if (lower === 'pure veg') {
+      clean = 'Pure Vegetarian';
+    } else if (lower === 'student friendly') {
+      clean = 'Student-Friendly';
+    } else if (lower === 'budget friendly') {
+      clean = 'Budget-Friendly';
     }
+
     if (!seen.has(clean.toLowerCase())) {
       seen.add(clean.toLowerCase());
       result.push(clean);

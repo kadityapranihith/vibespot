@@ -12,8 +12,9 @@ import {
   Compass,
   AlertCircle,
   Plus,
+  Check,
 } from 'lucide-react';
-import { CATEGORIES } from '@/types';
+import { CATEGORIES, STANDARDIZED_TAGS } from '@/types';
 import { normalizeTags } from '@/lib/utils';
 
 export interface AdminPlace {
@@ -39,24 +40,8 @@ interface PlaceEditModalProps {
   onClose: () => void;
   onSave: (savedPlace: AdminPlace) => void;
   getIdToken: () => Promise<string | null>;
+  availableTags?: string[];
 }
-
-const COMMON_TAGS = [
-  'Student Friendly',
-  'Budget-Friendly',
-  'AC',
-  'Pure Veg',
-  'Cozy Seating',
-  'Outdoor Seating',
-  'Late Night',
-  'Family Friendly',
-  'Quick Bite',
-  'Breakfast Spot',
-  'Work Friendly',
-  'Free WiFi',
-  'Biryani Specialist',
-  'Desserts & Shakes',
-];
 
 export function PlaceEditModal({
   isOpen,
@@ -64,8 +49,15 @@ export function PlaceEditModal({
   onClose,
   onSave,
   getIdToken,
+  availableTags,
 }: PlaceEditModalProps) {
   const isEditing = Boolean(place?.id);
+
+  // Preset tags strictly matching the filter modal tags / standardized list
+  const presetTags =
+    availableTags && availableTags.length > 0
+      ? availableTags
+      : Array.from(STANDARDIZED_TAGS);
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Cafés');
@@ -144,13 +136,16 @@ export function PlaceEditModal({
     );
   };
 
-  const addCustomTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = customTagInput.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags((prev) => [...prev, trimmed]);
-      setCustomTagInput('');
+  const addCustomTag = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleaned = customTagInput
+      .replace(/^[\[{\"\']+|[\]}\"\']+$/g, '')
+      .trim();
+    if (!cleaned) return;
+    if (!tags.some((t) => t.toLowerCase() === cleaned.toLowerCase())) {
+      setTags((prev) => [...prev, cleaned]);
     }
+    setCustomTagInput('');
   };
 
   const removeTag = (tag: string) => {
@@ -405,68 +400,113 @@ export function PlaceEditModal({
           </div>
 
           {/* Tags Section */}
-          <div className="space-y-2 pt-2 border-t border-stone-100">
-            <label className="block text-xs font-bold text-stone-700">
-              Vibe & Feature Tags ({tags.length} selected)
-            </label>
+          <div className="space-y-3 pt-3 border-t border-stone-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-xs font-bold text-stone-700">
+                  Vibe & Feature Tags
+                </label>
+                <p className="text-[11px] text-stone-500">
+                  Select standard tags from discovery filters, or add custom tags
+                </p>
+              </div>
+              <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                {tags.length} selected
+              </span>
+            </div>
 
-            {/* Popular preset tags */}
-            <div className="flex flex-wrap gap-1.5">
-              {COMMON_TAGS.map((t) => {
-                const isSelected = tags.includes(t);
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleTag(t)}
-                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all ${
-                      isSelected
-                        ? 'bg-orange-600 text-white shadow-2xs'
-                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
+            {/* Standard fixed tags matching discovery filters */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1.5">
+                Standard Filter Tags
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {presetTags.map((t) => {
+                  const isSelected = tags.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => toggleTag(t)}
+                      className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                        isSelected
+                          ? 'bg-orange-600 text-white shadow-xs'
+                          : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                      }`}
+                    >
+                      {isSelected && <Check size={11} strokeWidth={3} />}
+                      <span>{t}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Custom tag input */}
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="text"
-                value={customTagInput}
-                onChange={(e) => setCustomTagInput(e.target.value)}
-                placeholder="Add custom tag (e.g. Kothapet, Drive-through)..."
-                className="flex-1 text-xs px-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
-              />
-              <button
-                type="button"
-                onClick={addCustomTag}
-                className="px-3 py-2 bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shrink-0"
-              >
-                <Plus size={14} /> Add
-              </button>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1.5">
+                Add Custom Tag
+              </span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomTag();
+                    }
+                  }}
+                  placeholder="Type custom tag (e.g. Rooftop, Kothapet)..."
+                  className="flex-1 text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => addCustomTag()}
+                  className="px-3.5 py-2.5 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shrink-0 transition-colors"
+                >
+                  <Plus size={14} /> Add
+                </button>
+              </div>
             </div>
 
             {/* Selected tags chip display */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {tags.map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold bg-orange-50 text-orange-800 border border-orange-200 px-2 py-0.5 rounded-md"
-                  >
-                    <span>{t}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeTag(t)}
-                      className="text-orange-500 hover:text-orange-800"
-                    >
-                      <X size={11} />
-                    </button>
-                  </span>
-                ))}
+              <div className="bg-stone-50 border border-stone-200/80 rounded-xl p-3 space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                  Active Tags for this Spot ({tags.length})
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {tags.map((t) => {
+                    const isStandard = presetTags.includes(t);
+                    return (
+                      <span
+                        key={t}
+                        className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                          isStandard
+                            ? 'bg-orange-50 text-orange-800 border-orange-200'
+                            : 'bg-amber-50 text-amber-900 border-amber-200'
+                        }`}
+                      >
+                        <span>{t}</span>
+                        {!isStandard && (
+                          <span className="text-[9px] uppercase tracking-wide bg-amber-200 text-amber-800 px-1 rounded font-bold">
+                            custom
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(t)}
+                          className="text-stone-400 hover:text-stone-700 ml-0.5"
+                          title={`Remove ${t}`}
+                        >
+                          <X size={11} />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
