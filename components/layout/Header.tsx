@@ -14,12 +14,13 @@ import {
   Sparkles,
   SlidersHorizontal,
   MessageSquarePlus,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 import { cn } from '@/lib/utils';
 
 export function Header() {
-  const { user, signOutUser, loading } = useAuth();
+  const { user, signOutUser, loading, isAdmin } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -143,6 +144,16 @@ export function Header() {
 
           {/* Right: User / Auth Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-stone-900 hover:bg-stone-850 text-white shadow-xs transition-all hover:scale-105"
+              >
+                <ShieldCheck size={13} className="text-orange-400" />
+                <span>Admin</span>
+              </Link>
+            )}
+
             {loading ? (
               <div className="w-8 h-8 rounded-full bg-stone-100 animate-pulse" />
             ) : user ? (
@@ -180,6 +191,16 @@ export function Header() {
                       <User size={15} className="text-stone-400" />
                       My Profile & Ratings
                     </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-orange-600 bg-orange-50/80 hover:bg-orange-100 transition-colors border-y border-orange-100"
+                      >
+                        <ShieldCheck size={15} />
+                        Admin Portal
+                      </Link>
+                    )}
                     <Link
                       href="/feedback"
                       onClick={() => setUserDropdownOpen(false)}
@@ -303,6 +324,16 @@ export function Header() {
               <Sparkles size={15} className="text-orange-500" />
               Cafés & Hangouts
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-orange-50 text-orange-700 font-bold border border-orange-200"
+              >
+                <ShieldCheck size={16} className="text-orange-600" />
+                Admin Management Portal
+              </Link>
+            )}
             <Link
               href="/feedback"
               onClick={() => setMobileMenuOpen(false)}

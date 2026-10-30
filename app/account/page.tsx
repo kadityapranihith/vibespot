@@ -36,7 +36,7 @@ interface UserRatingItem {
 }
 
 export default function AccountPage() {
-  const { user, loading, signOutUser, getIdToken } = useAuth();
+  const { user, isAdmin, loading, signOutUser, getIdToken } = useAuth();
   const router = useRouter();
 
   const [ratings, setRatings] = useState<UserRatingItem[]>([]);
@@ -144,6 +144,26 @@ export default function AccountPage() {
               </span>
             </div>
           </div>
+
+          {isAdmin && (
+            <div className="p-4 rounded-2xl bg-orange-50 border border-orange-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div>
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-900">
+                  <ShieldCheck size={15} className="text-orange-600" />
+                  Administrator Privileges Active
+                </span>
+                <p className="text-[11px] text-orange-700/90 mt-0.5 leading-relaxed">
+                  Manage Kakinada restaurants, edit prices, toggle live listings, and publish new spots.
+                </p>
+              </div>
+              <Link
+                href="/admin"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white shadow-xs transition-all hover:scale-[1.02] shrink-0"
+              >
+                <span>Admin Portal</span>
+              </Link>
+            </div>
+          )}
 
           <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
             <Link

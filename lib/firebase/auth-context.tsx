@@ -12,9 +12,11 @@ import {
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from './config';
+import { isUserAdmin } from '@/lib/admin';
 
 interface AuthContextType {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -74,9 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return currentUser.getIdToken();
   }, []);
 
+  const isAdmin = useMemo(() => isUserAdmin(user?.email), [user?.email]);
+
   const value = useMemo(
     () => ({
       user,
+      isAdmin,
       loading,
       signIn,
       signUp,
@@ -85,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       resetPassword,
       getIdToken,
     }),
-    [user, loading, signIn, signUp, signInWithGoogle, signOutUser, resetPassword, getIdToken]
+    [user, isAdmin, loading, signIn, signUp, signInWithGoogle, signOutUser, resetPassword, getIdToken]
   );
 
   return (
