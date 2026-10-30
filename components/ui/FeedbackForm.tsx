@@ -11,7 +11,6 @@ import {
   Sparkles,
   CheckCircle,
   Loader2,
-  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 
@@ -57,7 +56,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
       id: 'feature' as const,
       label: 'Feature Idea',
       emoji: '💡',
-      placeholderSubject: 'e.g., Add veg-only filter / WhatsApp share',
+      placeholderSubject: 'e.g., Add veg-only filter / price range filter',
       placeholderDesc: 'Describe the feature you would love to see on Vibespot...',
     },
     {
@@ -114,14 +113,6 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
     } finally {
       setSubmitting(false);
     }
-  };
-
-  // WhatsApp helper
-  const handleOpenWhatsApp = () => {
-    const text = encodeURIComponent(
-      `Hi Aditya! [Vibespot ${currentTopic.label}]\n${subject ? `Subject: ${subject}\n` : ''}Details: ${description.trim()}`
-    );
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
   };
 
   // Mailto fallback
@@ -268,25 +259,16 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
         )}
       </button>
 
-      {/* Quick alternative channels */}
+      {/* Direct email fallback option */}
       <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
-        <span>Need urgent response?</span>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleOpenWhatsApp}
-            className="text-emerald-600 hover:text-emerald-700 font-bold flex items-center gap-1"
-          >
-            <MessageCircle size={12} /> WhatsApp
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenMailto}
-            className="text-stone-600 hover:text-orange-600 font-bold flex items-center gap-1"
-          >
-            <Mail size={12} /> Email
-          </button>
-        </div>
+        <span>Prefer using your device email app?</span>
+        <button
+          type="button"
+          onClick={handleOpenMailto}
+          className="text-stone-600 hover:text-orange-600 font-bold flex items-center gap-1.5 transition-colors"
+        >
+          <Mail size={12} /> Send via Mail App
+        </button>
       </div>
     </form>
   );
