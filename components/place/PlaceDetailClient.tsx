@@ -182,7 +182,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
               </div>
 
               {/* Coordinates */}
-              <div className="col-span-2 sm:col-span-1 bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+              <div className="col-span-2 sm:col-span-1 bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-xs">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
                   GPS Coordinates
                 </span>
