@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminRequest } from '@/lib/admin-server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { normalizeTags } from '@/lib/utils';
 
 /**
  * GET /api/admin/places
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
       return {
         ...p,
         id: Number(p.id),
+        tags: normalizeTags(p.tags),
         avg_price_rating: summary?.avg_price_rating ?? null,
         avg_ambience: summary?.avg_ambience ?? null,
         avg_food_quality: summary?.avg_food_quality ?? null,
@@ -124,7 +126,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, place: data });
+    return NextResponse.json({
+      success: true,
+      place: { ...data, tags: normalizeTags(data.tags) },
+    });
   } catch (err) {
     console.error('Admin POST error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -188,7 +193,10 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, place: data });
+    return NextResponse.json({
+      success: true,
+      place: { ...data, tags: normalizeTags(data.tags) },
+    });
   } catch (err) {
     console.error('Admin PATCH error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

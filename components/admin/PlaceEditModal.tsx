@@ -14,6 +14,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { CATEGORIES } from '@/types';
+import { normalizeTags } from '@/lib/utils';
 
 export interface AdminPlace {
   id?: number;
@@ -90,7 +91,7 @@ export function PlaceEditModal({
       setLatitude(place.latitude !== null && place.latitude !== undefined ? String(place.latitude) : '');
       setLongitude(place.longitude !== null && place.longitude !== undefined ? String(place.longitude) : '');
       setMapsUrl(place.maps_url || '');
-      setTags(Array.isArray(place.tags) ? place.tags : []);
+      setTags(normalizeTags(place.tags));
       setIsPublished(place.is_published ?? true);
     } else {
       setName('');
@@ -500,3 +501,4 @@ export function PlaceEditModal({
     </div>
   );
 }
+

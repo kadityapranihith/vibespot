@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { PlaceEditModal, AdminPlace } from '@/components/admin/PlaceEditModal';
 import { CATEGORIES } from '@/types';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, normalizeTags } from '@/lib/utils';
 
 export default function AdminDashboardPage() {
   const { user, isAdmin, loading, getIdToken } = useAuth();
@@ -166,7 +166,8 @@ export default function AdminDashboardPage() {
         const matchName = p.name.toLowerCase().includes(q);
         const matchAddress = p.address.toLowerCase().includes(q);
         const matchCat = p.category.toLowerCase().includes(q);
-        const matchTags = (p.tags || []).some((t) => t.toLowerCase().includes(q));
+        const tags = normalizeTags(p.tags);
+        const matchTags = tags.some((t) => t.toLowerCase().includes(q));
         if (!matchName && !matchAddress && !matchCat && !matchTags) return false;
       }
 
@@ -479,23 +480,27 @@ export default function AdminDashboardPage() {
                             <MapPin size={11} className="text-orange-500 shrink-0" />
                             {p.address}
                           </p>
-                          {p.tags && p.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {p.tags.slice(0, 3).map((t) => (
-                                <span
-                                  key={t}
-                                  className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-medium"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                              {p.tags.length > 3 && (
-                                <span className="text-[10px] text-stone-400">
-                                  +{p.tags.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          {(() => {
+                            const tags = normalizeTags(p.tags);
+                            if (tags.length === 0) return null;
+                            return (
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {tags.slice(0, 3).map((t) => (
+                                  <span
+                                    key={t}
+                                    className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-medium"
+                                  >
+                                    {t}
+                                  </span>
+                                ))}
+                                {tags.length > 3 && (
+                                  <span className="text-[10px] text-stone-400">
+                                    +{tags.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Category */}
@@ -676,3 +681,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
