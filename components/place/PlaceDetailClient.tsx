@@ -154,15 +154,22 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {/* Price for two */}
-              <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Price for Two
-                </span>
-                <span className="text-2xl font-black text-orange-600">
-                  {place.price_per_two ? formatPrice(place.price_per_two) : 'Not listed'}
-                </span>
-                <p className="text-[11px] text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg px-2.5 py-1.5 mt-2 leading-relaxed">
-                  *<strong>Estimated value only.</strong> Actual bill may vary depending on items ordered, quantity, and taxes.
+              <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                      Price for Two
+                    </span>
+                    <span className="text-[10px] font-semibold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                      Estimated
+                    </span>
+                  </div>
+                  <span className="text-2xl font-black text-orange-600 block">
+                    {place.price_per_two ? formatPrice(place.price_per_two) : 'Not listed'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-500 mt-2">
+                  Estimated value (2 main courses + 1 starter + 2 beverages)
                 </p>
               </div>
 

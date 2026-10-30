@@ -229,8 +229,9 @@ export function FilterModal({
               ))}
             </div>
 
-            <p className="text-[10px] text-stone-400 mt-2 italic">
-              *Approximate estimate for two people; actual bills vary by menu selection.
+            <p className="text-[11px] text-stone-500 mt-2.5 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
+              <span>Estimated value based on 2 main courses + 1 starter + 2 beverages.</span>
             </p>
           </div>
 
