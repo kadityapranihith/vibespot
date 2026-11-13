@@ -5,17 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   MapPin,
-  Search,
   User,
   LogOut,
   Menu,
   X,
   Compass,
   Sparkles,
-  SlidersHorizontal,
   MessageSquarePlus,
   ShieldCheck,
 } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/firebase/auth-context';
 import { cn } from '@/lib/utils';
 
@@ -40,11 +39,11 @@ export function Header() {
       }
     };
 
-    window.addEventListener('vibespot:shortcut', updateQuery);
+    window.addEventListener('whystayin:shortcut', updateQuery);
     window.addEventListener('popstate', updateQuery);
 
     return () => {
-      window.removeEventListener('vibespot:shortcut', updateQuery);
+      window.removeEventListener('whystayin:shortcut', updateQuery);
       window.removeEventListener('popstate', updateQuery);
     };
   }, []);
@@ -54,7 +53,7 @@ export function Header() {
     if (pathname === '/') {
       e.preventDefault();
       window.history.pushState(null, '', href);
-      window.dispatchEvent(new CustomEvent('vibespot:shortcut', { detail: href }));
+      window.dispatchEvent(new CustomEvent('whystayin:shortcut', { detail: href }));
     }
   };
 
@@ -68,43 +67,27 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
           {/* Left: Brand & City */}
-          <div className="flex items-center gap-3 sm:gap-6">
-            <Link
-              href="/"
-              onClick={(e) => handleShortcutClick(e, '/')}
-              className="flex items-center gap-2 group"
-            >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white shadow-sm shadow-orange-500/20 group-hover:scale-105 transition-transform">
-                <Sparkles size={18} className="fill-white/20" />
-              </div>
-              <div className="flex flex-col">
-                <span className="logo-script text-2xl sm:text-[28px] text-orange-600 font-bold leading-none tracking-tight">
-                  Vibespot
-                </span>
-                <span className="text-[9px] uppercase tracking-wider text-stone-400 font-bold -mt-0.5">
-                  Kakinada
-                </span>
-              </div>
-            </Link>
+          <div className="flex items-center gap-2 sm:gap-6 shrink-0">
+            <Logo href="/" className="h-[50px] sm:h-[58px] w-auto" />
 
             {/* City Location indicator */}
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-medium border border-stone-200">
-              <MapPin size={13} className="text-orange-500" />
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-700 text-xs font-medium border border-stone-200/60">
+              <MapPin size={13} className="text-[#FF5A36]" />
               <span>Kakinada, Andhra Pradesh</span>
             </div>
           </div>
 
           {/* Center / Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-stone-600">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-stone-700">
             <Link
               href="/"
               onClick={(e) => handleShortcutClick(e, '/')}
               className={cn(
-                'hover:text-orange-600 transition-colors',
-                isDiscoverActive ? 'text-orange-600 font-bold' : ''
+                'hover:text-[#FF5A36] transition-colors',
+                isDiscoverActive ? 'text-[#FF5A36] font-bold' : ''
               )}
             >
               Discover
@@ -113,8 +96,8 @@ export function Header() {
               href="/?sort=distance_asc"
               onClick={(e) => handleShortcutClick(e, '/?sort=distance_asc')}
               className={cn(
-                'hover:text-orange-600 transition-colors flex items-center gap-1',
-                isNearMeActive ? 'text-orange-600 font-bold' : ''
+                'hover:text-[#FF5A36] transition-colors flex items-center gap-1',
+                isNearMeActive ? 'text-[#FF5A36] font-bold' : ''
               )}
             >
               <Compass size={15} />
@@ -124,8 +107,8 @@ export function Header() {
               href="/?maxPrice=500"
               onClick={(e) => handleShortcutClick(e, '/?maxPrice=500')}
               className={cn(
-                'hover:text-orange-600 transition-colors',
-                isStudentFriendlyActive ? 'text-orange-600 font-bold' : ''
+                'hover:text-[#FF5A36] transition-colors',
+                isStudentFriendlyActive ? 'text-[#FF5A36] font-bold' : ''
               )}
             >
               Student Friendly
@@ -134,8 +117,8 @@ export function Header() {
               href="/?category=Caf%C3%A9s"
               onClick={(e) => handleShortcutClick(e, '/?category=Caf%C3%A9s')}
               className={cn(
-                'hover:text-orange-600 transition-colors',
-                isCafeActive ? 'text-orange-600 font-bold' : ''
+                'hover:text-[#FF5A36] transition-colors',
+                isCafeActive ? 'text-[#FF5A36] font-bold' : ''
               )}
             >
               Cafés
@@ -143,13 +126,13 @@ export function Header() {
           </nav>
 
           {/* Right: User / Auth Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {isAdmin && (
               <Link
                 href="/admin"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-stone-900 hover:bg-stone-850 text-white shadow-xs transition-all hover:scale-105"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-stone-900 hover:bg-stone-800 text-white shadow-xs transition-all hover:scale-105"
               >
-                <ShieldCheck size={13} className="text-orange-400" />
+                <ShieldCheck size={13} className="text-[#FF5A36]" />
                 <span>Admin</span>
               </Link>
             )}
@@ -163,10 +146,10 @@ export function Header() {
                   className="flex items-center gap-2 p-1.5 rounded-full hover:bg-stone-100 transition-colors border border-stone-200"
                   aria-label="User menu"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center text-xs font-bold shadow-xs">
                     {(user.displayName || user.email || 'U')[0].toUpperCase()}
                   </div>
-                  <span className="hidden sm:inline text-xs font-medium text-stone-700 max-w-[120px] truncate pr-1">
+                  <span className="hidden sm:inline text-xs font-medium text-stone-800 max-w-[120px] truncate pr-1">
                     {user.displayName || user.email?.split('@')[0]}
                   </span>
                 </button>
@@ -174,12 +157,12 @@ export function Header() {
                 {/* Dropdown Menu */}
                 {userDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-stone-200 py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                    className="absolute right-0 mt-2 w-56 rounded-2xl bg-white shadow-xl border border-stone-200/80 py-2 z-50 animate-in fade-in slide-in-from-top-2"
                     onMouseLeave={() => setUserDropdownOpen(false)}
                   >
                     <div className="px-4 py-2 border-b border-stone-100">
                       <p className="text-xs text-stone-400 font-medium">Signed in as</p>
-                      <p className="text-xs font-bold text-stone-800 truncate">
+                      <p className="text-xs font-bold text-stone-900 truncate">
                         {user.email}
                       </p>
                     </div>
@@ -195,7 +178,7 @@ export function Header() {
                       <Link
                         href="/admin"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-orange-600 bg-orange-50/80 hover:bg-orange-100 transition-colors border-y border-orange-100"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-[#FF5A36] bg-[#FF5A36]/8 hover:bg-[#FF5A36]/15 transition-colors border-y border-stone-100"
                       >
                         <ShieldCheck size={15} />
                         Admin Portal
@@ -206,7 +189,7 @@ export function Header() {
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors"
                     >
-                      <MessageSquarePlus size={15} className="text-orange-500" />
+                      <MessageSquarePlus size={15} className="text-[#FF5A36]" />
                       Report Bug / Ideas
                     </Link>
                     <button
@@ -223,18 +206,19 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Link
                   href="/auth/login"
-                  className="text-xs font-bold text-stone-700 hover:text-orange-600 px-3 py-2 transition-colors"
+                  className="text-xs font-bold text-stone-700 hover:text-[#FF5A36] px-2 sm:px-3 py-1.5 sm:py-2 transition-colors whitespace-nowrap"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-full shadow-sm shadow-orange-500/20 transition-all hover:shadow"
+                  className="text-xs font-bold bg-[#FF5A36] hover:bg-[#E04826] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xs transition-all hover:shadow-sm whitespace-nowrap"
                 >
-                  Join Vibespot
+                  <span className="sm:hidden">Join</span>
+                  <span className="hidden sm:inline">Join WhyStayIn</span>
                 </Link>
               </div>
             )}
@@ -242,7 +226,7 @@ export function Header() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-stone-600 hover:bg-stone-100 transition-colors"
+              className="md:hidden p-1.5 sm:p-2 rounded-xl text-stone-600 hover:bg-stone-100 transition-colors shrink-0"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -253,9 +237,9 @@ export function Header() {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-6 space-y-3">
-          <div className="flex items-center gap-1.5 p-2 rounded-lg bg-stone-50 text-stone-700 text-xs font-medium">
-            <MapPin size={13} className="text-orange-500" />
+        <div className="md:hidden border-t border-stone-200/80 bg-white px-4 pt-3 pb-6 space-y-3">
+          <div className="flex items-center gap-1.5 p-2 rounded-lg bg-stone-100 text-stone-700 text-xs font-medium">
+            <MapPin size={13} className="text-[#FF5A36]" />
             <span>Kakinada, Andhra Pradesh</span>
           </div>
 
@@ -269,11 +253,11 @@ export function Header() {
               className={cn(
                 'p-3 rounded-xl transition-colors flex items-center gap-2',
                 isDiscoverActive
-                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
-                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-stone-900 text-white font-bold'
+                  : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
               )}
             >
-              <Compass size={15} className="text-orange-500" />
+              <Compass size={15} className={isDiscoverActive ? 'text-white' : 'text-[#FF5A36]'} />
               All Places
             </Link>
             <Link
@@ -285,11 +269,11 @@ export function Header() {
               className={cn(
                 'p-3 rounded-xl transition-colors flex items-center gap-2',
                 isNearMeActive
-                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
-                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-stone-900 text-white font-bold'
+                  : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
               )}
             >
-              <MapPin size={15} className="text-orange-500" />
+              <MapPin size={15} className={isNearMeActive ? 'text-white' : 'text-[#FF5A36]'} />
               Near Me
             </Link>
             <Link
@@ -301,11 +285,11 @@ export function Header() {
               className={cn(
                 'p-3 rounded-xl transition-colors flex items-center gap-2',
                 isStudentFriendlyActive
-                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
-                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-stone-900 text-white font-bold'
+                  : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
               )}
             >
-              <Sparkles size={15} className="text-orange-500" />
+              <Sparkles size={15} className={isStudentFriendlyActive ? 'text-white' : 'text-[#FF5A36]'} />
               Budget Friendly
             </Link>
             <Link
@@ -317,30 +301,30 @@ export function Header() {
               className={cn(
                 'p-3 rounded-xl transition-colors flex items-center gap-2',
                 isCafeActive
-                  ? 'bg-orange-50 text-orange-600 font-bold border border-orange-200'
-                  : 'bg-stone-50 hover:bg-orange-50 hover:text-orange-600'
+                  ? 'bg-stone-900 text-white font-bold'
+                  : 'bg-stone-50 hover:bg-stone-100 text-stone-700'
               )}
             >
-              <Sparkles size={15} className="text-orange-500" />
+              <Sparkles size={15} className={isCafeActive ? 'text-white' : 'text-[#FF5A36]'} />
               Cafés & Hangouts
             </Link>
             {isAdmin && (
               <Link
                 href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-orange-50 text-orange-700 font-bold border border-orange-200"
+                className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-stone-900 text-white font-bold"
               >
-                <ShieldCheck size={16} className="text-orange-600" />
-                Admin Management Portal
+                <ShieldCheck size={16} className="text-[#FF5A36]" />
+                Admin Portal
               </Link>
             )}
             <Link
               href="/feedback"
               onClick={() => setMobileMenuOpen(false)}
-              className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-stone-50 hover:bg-orange-50 hover:text-orange-600 text-stone-700"
+              className="p-3 rounded-xl transition-colors flex items-center gap-2 bg-stone-50 hover:bg-stone-100 text-stone-700"
             >
-              <MessageSquarePlus size={15} className="text-orange-500" />
-              Send Feedback / Report Bug
+              <MessageSquarePlus size={15} className="text-[#FF5A36]" />
+              Send Feedback
             </Link>
           </div>
         </div>

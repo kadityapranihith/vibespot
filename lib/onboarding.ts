@@ -1,5 +1,5 @@
-export const WELCOME_KEY = 'vibespot_seen_welcome';
-export const PREFS_KEY = 'vibespot_prefs';
+export const WELCOME_KEY = 'whystayin_seen_welcome';
+export const PREFS_KEY = 'whystayin_prefs';
 
 export interface UserPrefs {
   foods: string[];
@@ -11,7 +11,7 @@ export interface UserPrefs {
 export function getPrefs(): UserPrefs | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(PREFS_KEY);
+    const raw = localStorage.getItem(PREFS_KEY) || localStorage.getItem('vibespot_prefs');
     return raw ? (JSON.parse(raw) as UserPrefs) : null;
   } catch {
     return null;

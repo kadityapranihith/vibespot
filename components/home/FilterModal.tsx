@@ -115,7 +115,7 @@ export function FilterModal({
         {/* Header */}
         <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-stone-100 flex items-center justify-between shrink-0 bg-stone-50/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center font-bold">
               <SlidersHorizontal size={18} />
             </div>
             <div>
@@ -142,7 +142,7 @@ export function FilterModal({
           {/* SECTION 1: SORT BY */}
           <div>
             <div className="flex items-center gap-1.5 mb-2.5">
-              <ArrowUpDown size={14} className="text-orange-600" />
+              <ArrowUpDown size={14} className="text-[#FF5A36]" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 Sort Order
               </h4>
@@ -172,12 +172,12 @@ export function FilterModal({
           <div className="pt-4 border-t border-stone-100">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
-                <DollarSign size={14} className="text-orange-600" />
+                <DollarSign size={14} className="text-[#FF5A36]" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
                   Price for Two
                 </h4>
               </div>
-              <span className="text-xs font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg border border-orange-200/60">
+              <span className="text-xs font-bold text-stone-900 bg-stone-100 px-2 py-0.5 rounded-lg border border-stone-200">
                 {maxPrice >= priceBounds.max && minPrice <= priceBounds.min
                   ? `Any price (up to ${formatPrice(priceBounds.max)})`
                   : `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}`}
@@ -196,7 +196,7 @@ export function FilterModal({
                 step={50}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#FF5A36]"
                 aria-label="Filter maximum price for two"
               />
               <span className="text-[11px] font-semibold text-stone-400">
@@ -220,7 +220,7 @@ export function FilterModal({
                   }}
                   className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
                     maxPrice === preset.max && minPrice === priceBounds.min
-                      ? 'bg-orange-600 text-white border-orange-600 shadow-2xs'
+                      ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
                       : 'bg-stone-50 text-stone-700 hover:bg-stone-100 border-stone-200'
                   }`}
                 >
@@ -230,7 +230,7 @@ export function FilterModal({
             </div>
 
             <p className="text-[11px] text-stone-500 mt-2.5 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A36] shrink-0" />
               <span>Estimated value based on 2 main courses + 1 starter + 2 beverages.</span>
             </p>
           </div>
@@ -239,7 +239,7 @@ export function FilterModal({
           <div className="pt-4 border-t border-stone-100">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
-                <Sparkles size={14} className="text-orange-600" />
+                <Sparkles size={14} className="text-[#FF5A36]" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
                   Vibes & Dietary Tags
                 </h4>
@@ -252,7 +252,7 @@ export function FilterModal({
                   onClick={() => setTagLogic('OR')}
                   className={`px-2 py-0.5 rounded-md font-bold transition-all ${
                     tagLogic === 'OR'
-                      ? 'bg-white text-orange-600 shadow-2xs'
+                      ? 'bg-white text-stone-900 shadow-2xs'
                       : 'text-stone-500 hover:text-stone-800'
                   }`}
                   title="Places matching ANY selected tag"
@@ -264,7 +264,7 @@ export function FilterModal({
                   onClick={() => setTagLogic('AND')}
                   className={`px-2 py-0.5 rounded-md font-bold transition-all ${
                     tagLogic === 'AND'
-                      ? 'bg-white text-orange-600 shadow-2xs'
+                      ? 'bg-white text-stone-900 shadow-2xs'
                       : 'text-stone-500 hover:text-stone-800'
                   }`}
                   title="Places matching ALL selected tags"
@@ -285,7 +285,7 @@ export function FilterModal({
                 value={tagSearch}
                 onChange={(e) => setTagSearch(e.target.value)}
                 placeholder="Search tags (e.g. Pure Veg, AC, Late Night, Mandi)..."
-                className="w-full pl-8 pr-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-orange-500 text-stone-800"
+                className="w-full pl-8 pr-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-[#FF5A36] text-stone-800"
               />
             </div>
 
@@ -305,7 +305,7 @@ export function FilterModal({
                     }`}
                   >
                     {isSelected && (
-                      <Check size={11} className="text-orange-400 stroke-[3]" />
+                      <Check size={11} className="text-[#FF5A36] stroke-[3]" />
                     )}
                     <span>{tag}</span>
                   </button>
@@ -329,7 +329,7 @@ export function FilterModal({
           <button
             type="button"
             onClick={onClose}
-            className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs py-3 px-6 rounded-xl shadow-sm shadow-orange-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+            className="bg-[#FF5A36] hover:bg-[#E04826] text-white font-bold text-xs py-3 px-6 rounded-xl shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
           >
             <span>Show {resultsCount} {resultsCount === 1 ? 'Place' : 'Places'}</span>
           </button>

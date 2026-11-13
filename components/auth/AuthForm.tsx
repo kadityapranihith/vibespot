@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, Loader2, Sparkles, ArrowLeft, KeyRound, CheckCircle2, X, Mail } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft, KeyRound, CheckCircle2, X, Mail } from 'lucide-react';
 import { useAuth } from '@/lib/firebase/auth-context';
 import { isFirebaseConfigured } from '@/lib/firebase/config';
 import { getFirebaseErrorMessage } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/ui/Logo';
 
 interface AuthFormProps {
   mode: 'login' | 'signup';
@@ -97,26 +98,26 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto my-8 sm:my-14 px-6 py-8 sm:p-10 bg-white sm:rounded-3xl sm:border sm:border-stone-200/90 sm:shadow-xl sm:shadow-orange-500/5">
+    <div className="w-full max-w-md mx-auto my-8 sm:my-14 px-6 py-8 sm:p-10 bg-white sm:rounded-3xl sm:border sm:border-stone-200/80 sm:shadow-lg">
       {/* Back button */}
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 mb-6 transition-colors"
       >
         <ArrowLeft size={14} /> Back to home
       </Link>
 
       <div className="text-center mb-6">
-        <div className="inline-flex w-12 h-12 rounded-2xl bg-orange-500 text-white items-center justify-center shadow-md shadow-orange-500/20 mb-3">
-          <Sparkles size={24} />
+        <div className="flex justify-center mb-3">
+          <Logo href="/" className="h-12 w-auto" />
         </div>
         <h1 className="text-2xl font-black text-stone-900 tracking-tight">
-          {mode === 'login' ? 'Welcome Back to Vibespot' : 'Join Vibespot Kakinada'}
+          {mode === 'login' ? 'Welcome Back to WhyStayIn' : 'Join WhyStayIn Kakinada'}
         </h1>
-        <p className="text-xs text-stone-500 mt-1">
+        <p className="text-xs text-stone-600 mt-1">
           {mode === 'login'
             ? 'Sign in to rate your favourite places and save spots'
-            : 'Discover, rate, and explore the best food spots in Kakinada'}
+            : 'Discover, rate, and explore the best places & chillout spots in Kakinada'}
         </p>
       </div>
 
@@ -149,7 +150,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="you@domain.com"
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] transition-all bg-white"
           />
         </div>
 
@@ -167,7 +168,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   setForgotSuccess('');
                   setForgotError('');
                 }}
-                className="text-[11px] font-bold text-orange-600 hover:text-orange-700 hover:underline"
+                className="text-[11px] font-bold text-[#FF5A36] hover:text-[#E04826] hover:underline"
               >
                 Forgot password?
               </button>
@@ -183,7 +184,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               required
               minLength={6}
               placeholder="••••••••"
-              className="w-full px-4 py-3 pr-10 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+              className="w-full px-4 py-3 pr-10 rounded-xl border border-stone-200 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] transition-all bg-white"
             />
             <button
               type="button"
@@ -199,7 +200,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <button
           type="submit"
           disabled={loading || googleLoading || !isFirebaseConfigured()}
-          className="w-full py-3.5 px-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm shadow-md shadow-orange-500/20 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+          className="w-full py-3.5 px-4 rounded-xl bg-[#FF5A36] hover:bg-[#E04826] text-white font-bold text-sm shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
         >
           {loading ? (
             <Loader2 size={16} className="animate-spin" />
@@ -256,7 +257,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             Don&apos;t have an account?{' '}
             <Link
               href={`/auth/signup?redirect=${encodeURIComponent(redirect)}`}
-              className="text-orange-600 font-bold hover:underline"
+              className="text-[#FF5A36] font-bold hover:underline"
             >
               Sign up
             </Link>
@@ -266,7 +267,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             Already have an account?{' '}
             <Link
               href={`/auth/login?redirect=${encodeURIComponent(redirect)}`}
-              className="text-orange-600 font-bold hover:underline"
+              className="text-[#FF5A36] font-bold hover:underline"
             >
               Sign in
             </Link>
@@ -280,7 +281,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full border border-stone-200 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+                <div className="w-9 h-9 rounded-xl bg-stone-900 text-[#FF5A36] flex items-center justify-center font-bold">
                   <KeyRound size={18} />
                 </div>
                 <h3 className="text-base font-black text-stone-900">
@@ -335,7 +336,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                     onChange={(e) => setForgotEmail(e.target.value)}
                     required
                     placeholder="you@domain.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36]"
                   />
                 </div>
 
@@ -350,7 +351,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   <button
                     type="submit"
                     disabled={forgotLoading}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-orange-500/25 disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-[#FF5A36] hover:bg-[#E04826] transition-all flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50"
                   >
                     {forgotLoading ? (
                       <>

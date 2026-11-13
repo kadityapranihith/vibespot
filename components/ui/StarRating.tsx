@@ -47,7 +47,7 @@ export function StarRating({
         >
           <Star
             size={px}
-            className={display >= star ? 'fill-[#ff5722] text-[#ff5722]' : 'fill-gray-200 text-gray-200'}
+            className={display >= star ? 'fill-[#FF5A36] text-[#FF5A36]' : 'fill-gray-200 text-gray-200'}
           />
         </button>
       ))}

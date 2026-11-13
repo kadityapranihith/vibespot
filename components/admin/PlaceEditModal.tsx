@@ -229,7 +229,7 @@ export function PlaceEditModal({
                 {isEditing ? `Edit: ${place?.name}` : 'Add New Restaurant / Spot'}
               </h2>
               <p className="text-xs text-stone-400 mt-0.5">
-                {isEditing ? 'Update menu price, location, or tags' : 'Publish directly to Vibespot Kakinada'}
+                {isEditing ? 'Update menu price, location, or tags' : 'Publish directly to WhyStayIn Kakinada'}
               </p>
             </div>
           </div>

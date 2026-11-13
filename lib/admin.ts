@@ -1,4 +1,4 @@
-// Default authorized admin emails for Vibespot
+// Default authorized admin emails for WhyStayIn
 const DEFAULT_ADMIN_EMAILS = [
   'adityapranihith123@gmail.com',
   'pranihithaditya@gmail.com',

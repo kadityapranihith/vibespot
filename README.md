@@ -1,6 +1,6 @@
-# Vibespot — Kakinada Food Discovery Platform
+# WhyStayIn — Kakinada Lifestyle & Food Discovery Platform
 
-**Vibespot** is a modern, mobile-first food discovery web platform designed to help students, young professionals, and families discover restaurants, cafés, tiffin centers, and street food spots in **Kakinada, Andhra Pradesh**.
+**WhyStayIn** is a modern, mobile-first lifestyle and food discovery web platform designed to help students, young professionals, and families discover restaurants, cafés, chillout places, and local gems in **Kakinada, Andhra Pradesh**.
 
 Built with **Next.js (App Router)**, **TypeScript**, **Tailwind CSS**, **Firebase Authentication**, and **Supabase PostgreSQL**.
 

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, Playfair_Display } from 'next/font/google';
+import { Plus_Jakarta_Sans, DM_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/lib/firebase/auth-context';
@@ -9,28 +9,29 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { FeedbackButton } from '@/components/ui/FeedbackButton';
 import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-logo',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
+
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
-  variable: '--font-logo',
-});
-
 export const metadata: Metadata = {
-  title: 'Vibespot — Discover Great Food Spots in Kakinada',
+  title: 'WhyStayIn — Discover Great Spots in Kakinada',
   description:
-    'Find restaurants, cafés, and food spots in Kakinada, Andhra Pradesh by budget, distance, tags, and authentic community ratings.',
+    'Find restaurants, cafés, chillout spots, and local gems in Kakinada, Andhra Pradesh. Discover by budget, distance, tags, and authentic community ratings.',
   keywords: [
     'Kakinada restaurants',
     'Kakinada cafes',
-    'Vibespot Kakinada',
+    'WhyStayIn Kakinada',
     'Andhra Pradesh food',
     'budget dining Kakinada',
-    'student-friendly cafes Kakinada',
+    'chillout places Kakinada',
+    'local spots Kakinada',
   ],
 };
 
@@ -38,14 +39,14 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#ff5722',
+  themeColor: '#FF5A36',
 };
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${plusJakarta.variable} ${dmSans.variable}`}>
       {GA_ID && (
         <>
           <Script
@@ -68,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </>
       )}
-      <body className={`${dmSans.className} antialiased bg-[#faf8f5] text-stone-900 min-h-screen flex flex-col`}>
+      <body className={`${dmSans.className} antialiased bg-[#FAFAFA] text-slate-900 min-h-screen flex flex-col`}>
         <AuthProvider>
           <AnalyticsTracker />
           <Header />

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { UserLocation, LocationStatus } from '@/types';
 
-const STORAGE_KEY = 'vibespot_user_location';
+const STORAGE_KEY = 'whystayin_user_location';
 
 export function useUserLocation() {
   const [location, setLocation] = useState<UserLocation | null>(null);
@@ -13,7 +13,7 @@ export function useUserLocation() {
   // Initialize from sessionStorage if available
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem(STORAGE_KEY);
+      const saved = sessionStorage.getItem(STORAGE_KEY) || sessionStorage.getItem('vibespot_user_location');
       if (saved) {
         const parsed = JSON.parse(saved) as UserLocation;
         if (parsed.latitude && parsed.longitude) {

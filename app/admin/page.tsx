@@ -485,7 +485,7 @@ export default function AdminDashboardPage() {
           Signed in as: <strong className="text-stone-800">{user.email}</strong>
         </p>
         <p className="text-xs text-stone-500 mb-6 leading-relaxed">
-          This account is not registered as an authorized administrator for Vibespot Kakinada.
+          This account is not registered as an authorized administrator for WhyStayIn Kakinada.
         </p>
         <Link
           href="/"
@@ -511,7 +511,7 @@ export default function AdminDashboardPage() {
                 <span className="text-xs text-stone-400">{user.email}</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Vibespot Control Center
+                WhyStayIn Control Center
               </h1>
               <p className="text-xs text-stone-400 mt-1">
                 Manage Kakinada food spots, verify listings, and respond to community bug reports & suggestions
@@ -1142,8 +1142,8 @@ export default function AdminDashboardPage() {
                             <>
                               <span>•</span>
                               <a
-                                href={`mailto:${f.sender_email}?subject=Re: [Vibespot] ${encodeURIComponent(f.subject || badge.label)}`}
-                                className="inline-flex items-center gap-1 text-orange-600 hover:underline font-semibold"
+                                href={`mailto:${f.sender_email}?subject=Re: [WhyStayIn] ${encodeURIComponent(f.subject || badge.label)}`}
+                                className="inline-flex items-center gap-1 text-[#FF5A36] hover:underline font-semibold"
                                 title="Click to open email client and reply"
                               >
                                 <Mail size={13} />
@@ -1247,7 +1247,7 @@ export default function AdminDashboardPage() {
           setSuccessMsg(
             editingPlace?.id
               ? `Updated "${savedPlace.name}" successfully`
-              : `Added new spot "${savedPlace.name}" to Vibespot!`
+              : `Added new spot "${savedPlace.name}" to WhyStayIn!`
           );
           setTimeout(() => setSuccessMsg(''), 4000);
         }}

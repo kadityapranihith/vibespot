@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
 
-export const metadata = { title: 'Sign In — Vibespot' };
+export const metadata = { title: 'Sign In — WhyStayIn' };
 
 export default function LoginPage() {
   return (

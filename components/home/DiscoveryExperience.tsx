@@ -111,6 +111,13 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
     }
   }, [location, sortOption]);
 
+  // Auto-request location when sort=distance_asc is selected but no location yet
+  useEffect(() => {
+    if (sortOption === 'distance_asc' && !location && locationStatus === 'idle') {
+      requestLocation();
+    }
+  }, [sortOption, location, locationStatus, requestLocation]);
+
   // Apply URL parameters directly to state (independent shortcuts, no unintended intersections)
   const applyUrlFilters = useCallback((params: URLSearchParams) => {
     const newCat = params.get('category') || 'All';
@@ -142,11 +149,11 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
       applyUrlFilters(params);
     };
 
-    window.addEventListener('vibespot:shortcut', handleShortcut as EventListener);
+    window.addEventListener('whystayin:shortcut', handleShortcut as EventListener);
     window.addEventListener('popstate', handlePopState);
 
     return () => {
-      window.removeEventListener('vibespot:shortcut', handleShortcut as EventListener);
+      window.removeEventListener('whystayin:shortcut', handleShortcut as EventListener);
       window.removeEventListener('popstate', handlePopState);
     };
   }, [applyUrlFilters]);
@@ -344,23 +351,23 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
       {/* ========================================================= */}
       {/* SECTION B: HERO SECTION                                   */}
       {/* ========================================================= */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-amber-50/30 to-transparent pt-10 pb-8 sm:pt-14 sm:pb-12 border-b border-orange-100/60">
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-stone-50/50 to-transparent pt-10 pb-8 sm:pt-14 sm:pb-12 border-b border-stone-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
-            {/* City indicator badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-orange-700 text-xs font-bold border border-orange-200/80 shadow-xs mb-3">
-              <MapPin size={13} className="text-orange-500 fill-orange-500" />
+            {/* City indicator badge (hidden on mobile/phone view to keep hero clean) */}
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-stone-800 text-xs font-bold border border-stone-200/90 shadow-xs mb-3">
+              <MapPin size={13} className="text-[#FF5A36] fill-[#FF5A36]" />
               <span>Kakinada, Andhra Pradesh</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-stone-900 tracking-tight leading-[1.1]">
               Find your next <br className="hidden sm:block" />
-              <span className="text-orange-600 logo-script font-bold">favourite food spot</span> in Kakinada.
+              <span className="text-[#FF5A36] logo-script font-bold">chillout spot</span> in Kakinada.
             </h1>
 
             {/* Prominent Search Field */}
             <div className="mt-6 sm:mt-7 relative max-w-2xl mx-auto">
-              <div className="relative flex items-center bg-white rounded-2xl shadow-md shadow-orange-500/5 border border-stone-200 focus-within:border-orange-500 focus-within:ring-4 focus-within:ring-orange-500/10 transition-all">
+              <div className="relative flex items-center bg-white rounded-2xl shadow-xs border border-stone-200 focus-within:border-[#FF5A36] focus-within:ring-4 focus-within:ring-[#FF5A36]/10 transition-all">
                 <Search size={20} className="text-stone-400 ml-4 shrink-0" />
                 <input
                   type="text"
@@ -368,12 +375,12 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search spots by name, area (e.g. Bhanugudi), category, or cravings..."
                   className="w-full py-3.5 sm:py-4 pl-3 pr-10 bg-transparent text-sm sm:text-base text-stone-900 placeholder-stone-400 focus:outline-none"
-                  aria-label="Search restaurants in Kakinada"
+                  aria-label="Search spots in Kakinada"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch('')}
-                    className="p-2 mr-2 text-stone-400 hover:text-stone-600"
+                    className="p-2 mr-2 text-stone-400 hover:text-stone-700"
                     aria-label="Clear search query"
                   >
                     <X size={18} />
@@ -399,12 +406,12 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                   </button>
                 </div>
               ) : locationStatus === 'denied' ? (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-medium">
-                  <AlertCircle size={13} className="text-amber-600" />
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200 font-medium">
+                  <AlertCircle size={13} className="text-[#FF5A36]" />
                   <span>Location access denied in browser. Displaying default order.</span>
                   <button
                     onClick={() => requestLocation(true)}
-                    className="ml-1 text-amber-900 underline font-bold"
+                    className="ml-1 text-[#FF5A36] underline font-bold"
                   >
                     Retry
                   </button>
@@ -417,7 +424,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                 >
                   <Navigation
                     size={13}
-                    className={`text-orange-400 rotate-45 group-hover:text-orange-300 ${
+                    className={`text-[#FF5A36] rotate-45 group-hover:text-[#FFA894] ${
                       locationStatus === 'requesting' ? 'animate-spin' : ''
                     }`}
                   />
@@ -446,18 +453,18 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               onClick={() => setIsFilterModalOpen(true)}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border shadow-xs ${
                 activeFilterCount > 0
-                  ? 'bg-stone-900 text-white border-stone-900 shadow-stone-900/15 scale-[1.02]'
-                  : 'bg-white text-stone-700 hover:bg-stone-100 border-stone-200'
+                  ? 'bg-[#FF5A36] text-white border-[#FF5A36] scale-[1.02]'
+                  : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
               }`}
               aria-label="Open filter options"
             >
               <SlidersHorizontal
                 size={14}
-                className={activeFilterCount > 0 ? 'text-orange-400' : 'text-orange-600'}
+                className={activeFilterCount > 0 ? 'text-white' : 'text-[#FF5A36]'}
               />
               <span>Filters</span>
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-orange-600 text-white text-[10px] font-black flex items-center justify-center">
+                <span className="w-5 h-5 rounded-full bg-white text-[#FF5A36] text-[10px] font-black flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -475,14 +482,14 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                   onClick={() => setCategory(cat)}
                   className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
                     isSelected
-                      ? 'bg-orange-600 text-white shadow-sm shadow-orange-500/25 scale-[1.02]'
-                      : 'bg-white text-stone-700 hover:bg-stone-100 hover:text-stone-900 border border-stone-200'
+                      ? 'bg-[#FF5A36] text-white shadow-xs scale-[1.02]'
+                      : 'bg-white text-stone-700 hover:bg-stone-50 hover:text-stone-900 border border-stone-200'
                   }`}
                   aria-pressed={isSelected}
                 >
                   <Icon
                     size={13}
-                    className={isSelected ? 'text-white' : 'text-orange-500'}
+                    className={isSelected ? 'text-white' : 'text-[#FF5A36]'}
                   />
                   <span>{cat}</span>
                 </button>
@@ -514,7 +521,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               }}
               className={`inline-flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border ${
                 maxPrice === 400 && minPrice === priceBounds.min
-                  ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
+                  ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-2xs'
                   : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
               }`}
             >
@@ -531,7 +538,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               }}
               className={`inline-flex items-center gap-1 px-3.5 py-2.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 border ${
                 sortOption === 'rating_desc'
-                  ? 'bg-stone-900 text-white border-stone-900 shadow-2xs'
+                  ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-2xs'
                   : 'bg-white text-stone-700 hover:bg-stone-50 border-stone-200'
               }`}
             >
@@ -542,21 +549,21 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
           {/* Active Summary Badges (Only displayed when any filters are active) */}
           {hasActiveFilters && (
             <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-              <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mr-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
                 Active:
               </span>
               {search && (
-                <span className="inline-flex items-center gap-1 bg-stone-100 text-stone-700 px-2.5 py-1 rounded-lg font-medium">
+                <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-medium">
                   Search: &quot;{search}&quot;
-                  <button onClick={() => setSearch('')} className="hover:text-stone-900">
+                  <button onClick={() => setSearch('')} className="hover:text-slate-900">
                     <X size={12} />
                   </button>
                 </span>
               )}
               {category !== 'All' && (
-                <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-800 px-2.5 py-1 rounded-lg font-medium">
+                <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-900 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">
                   {category}
-                  <button onClick={() => setCategory('All')} className="hover:text-orange-950">
+                  <button onClick={() => setCategory('All')} className="hover:text-[#FF5A36]">
                     <X size={12} />
                   </button>
                 </span>
@@ -564,16 +571,16 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 bg-stone-800 text-white px-2.5 py-1 rounded-lg font-medium"
+                  className="inline-flex items-center gap-1 bg-slate-800 text-white px-2.5 py-1 rounded-lg font-medium"
                 >
                   {tag}
-                  <button onClick={() => toggleTag(tag)} className="hover:text-stone-300">
+                  <button onClick={() => toggleTag(tag)} className="hover:text-slate-300">
                     <X size={12} />
                   </button>
                 </span>
               ))}
               {(maxPrice < priceBounds.max || minPrice > priceBounds.min) && (
-                <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 px-2.5 py-1 rounded-lg font-medium">
+                <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-900 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">
                   {minPrice > priceBounds.min ? `${formatPrice(minPrice)} – ` : 'Up to '}
                   {formatPrice(maxPrice)}
                   <button
@@ -581,14 +588,14 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
                       setMinPrice(priceBounds.min);
                       setMaxPrice(priceBounds.max);
                     }}
-                    className="hover:text-amber-950"
+                    className="hover:text-[#FF5A36]"
                   >
                     <X size={12} />
                   </button>
                 </span>
               )}
               {sortOption !== (location ? 'distance_asc' : 'default') && (
-                <span className="inline-flex items-center gap-1 bg-sky-100 text-sky-800 px-2.5 py-1 rounded-lg font-medium">
+                <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 border border-sky-200 px-2.5 py-1 rounded-lg font-medium">
                   Sorted:{' '}
                   {sortOption === 'rating_desc'
                     ? 'Top Rated'
@@ -607,7 +614,7 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
               )}
               <button
                 onClick={resetFilters}
-                className="text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline ml-2"
+                className="text-xs font-bold text-[#FF5A36] hover:text-[#E04826] hover:underline ml-2"
               >
                 Clear all
               </button>
@@ -617,23 +624,22 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
 
         {/* Results Header: Count & Sort Quick Selector */}
         <div className="flex items-center justify-between gap-3 mb-6">
-          <h2 className="text-lg sm:text-xl font-black text-stone-900 tracking-tight">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
             {processedPlaces.length}{' '}
-            <span className="font-semibold text-stone-500 text-sm sm:text-base">
+            <span className="font-semibold text-slate-500 text-sm sm:text-base">
               {processedPlaces.length === 1 ? 'spot found' : 'spots to explore'}
             </span>
           </h2>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-stone-400 hidden sm:inline">Sort:</span>
+            <span className="text-[11px] font-bold text-slate-400 hidden sm:inline">Sort:</span>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-white border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-700 focus:outline-none shadow-2xs cursor-pointer"
+              className="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
             >
-              {location && (
-                <option value="distance_asc">📍 Nearest First</option>
-              )}
+              {/* Always show Nearest First — selecting it triggers location request if needed */}
+              <option value="distance_asc">📍 Nearest First</option>
               <option value="default">✨ Recommended</option>
               <option value="rating_desc">⭐ Top Rated</option>
               <option value="price_asc">💰 Budget (Low-High)</option>
@@ -659,19 +665,19 @@ export function DiscoveryExperience({ initialPlaces }: DiscoveryExperienceProps)
           </div>
         ) : (
           /* Empty State */
-          <div className="bg-white rounded-3xl border border-stone-200 p-10 sm:p-14 text-center max-w-lg mx-auto shadow-xs">
-            <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-3xl border border-slate-200 p-10 sm:p-14 text-center max-w-lg mx-auto shadow-xs">
+            <div className="w-14 h-14 rounded-2xl bg-[#FF5A36]/10 text-[#FF5A36] flex items-center justify-center mx-auto mb-4">
               <Search size={24} />
             </div>
-            <h3 className="text-lg font-bold text-stone-900 mb-1">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">
               No matching spots found
             </h3>
-            <p className="text-sm text-stone-500 mb-6 leading-relaxed">
-              We couldn&apos;t find any restaurants matching your combination of filters. Try clearing tags, expanding your price budget, or broadening your search terms.
+            <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+              We couldn&apos;t find any spots matching your filters. Try clearing tags, expanding your price budget, or broadening your search terms.
             </p>
             <button
               onClick={resetFilters}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-sm shadow-orange-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF5A36] hover:bg-[#E04826] text-white text-xs font-bold transition-all shadow-xs"
             >
               <RotateCcw size={14} />
               Reset all filters

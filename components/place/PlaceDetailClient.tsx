@@ -64,8 +64,8 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
     if (typeof window !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: `${place.name} — Vibespot Kakinada`,
-          text: `Check out ${place.name} on Vibespot Kakinada!`,
+          title: `${place.name} — WhyStayIn Kakinada`,
+          text: `Check out ${place.name} on WhyStayIn Kakinada!`,
           url: window.location.href,
         });
       } catch {
@@ -81,7 +81,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-orange-600 bg-stone-100 hover:bg-stone-200 px-3.5 py-2 rounded-full transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#FF5A36] bg-stone-100 hover:bg-stone-200 px-3.5 py-2 rounded-full transition-colors"
           >
             <ArrowLeft size={14} />
             <span>Back to Discovery</span>
@@ -113,12 +113,12 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/35 to-black/25 flex flex-col justify-between p-5 sm:p-8 md:p-10 text-white">
             {/* Top row: Category tag & Distance badge (balanced left-aligned) */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-block px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-orange-600 text-white shadow-sm max-w-fit">
+              <span className="inline-block px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-stone-900/90 text-white backdrop-blur-md shadow-xs max-w-fit">
                 {place.category}
               </span>
               {distanceKm !== null && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-black/60 backdrop-blur-md text-orange-200 border border-white/20">
-                  <Navigation size={11} className="text-orange-400 rotate-45" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-semibold bg-black/60 backdrop-blur-md text-stone-200 border border-white/20">
+                  <Navigation size={11} className="text-[#FF5A36] rotate-45" />
                   {formatDistance(distanceKm)} (straight-line)
                 </span>
               )}
@@ -131,7 +131,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
               </h1>
 
               <p className="text-stone-300 text-xs sm:text-sm flex items-center gap-1.5 max-w-2xl leading-relaxed">
-                <MapPin size={14} className="text-orange-400 shrink-0" />
+                <MapPin size={14} className="text-[#FF5A36] shrink-0" />
                 <span>{place.address}</span>
               </p>
             </div>
@@ -157,7 +157,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
                       Estimated
                     </span>
                   </div>
-                  <span className="text-xl sm:text-2xl font-black text-orange-600 block">
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 block">
                     {place.price_per_two ? formatPrice(place.price_per_two) : 'Not listed'}
                   </span>
                 </div>
@@ -246,9 +246,9 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
                   href={place.maps_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-sm hover:scale-[1.01]"
+                  className="w-full flex items-center justify-center gap-2 bg-stone-900 hover:bg-stone-800 text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-xs hover:scale-[1.01]"
                 >
-                  <ExternalLink size={16} className="text-orange-400" />
+                  <ExternalLink size={16} className="text-[#FF5A36]" />
                   <span>Open in Google Maps for Driving Directions</span>
                 </a>
               ) : (
@@ -264,7 +264,7 @@ export function PlaceDetailClient({ place, returnQuery }: PlaceDetailClientProps
             {/* Community Rating Breakdown */}
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs">
               <h2 className="text-base font-bold text-stone-900 mb-4 flex items-center gap-2">
-                <Star size={18} className="text-amber-500 fill-amber-500" />
+                <Star size={18} className="text-[#FF5A36] fill-[#FF5A36]" />
                 Community Ratings
               </h2>
               <RatingDisplay place={place} />

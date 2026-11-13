@@ -27,11 +27,11 @@ function BottomNavContent() {
       }
     };
 
-    window.addEventListener('vibespot:shortcut', updateQuery);
+    window.addEventListener('whystayin:shortcut', updateQuery);
     window.addEventListener('popstate', updateQuery);
 
     return () => {
-      window.removeEventListener('vibespot:shortcut', updateQuery);
+      window.removeEventListener('whystayin:shortcut', updateQuery);
       window.removeEventListener('popstate', updateQuery);
     };
   }, []);
@@ -43,7 +43,7 @@ function BottomNavContent() {
     if (pathname === '/' && (href.startsWith('/?') || href === '/')) {
       e.preventDefault();
       window.history.pushState(null, '', href);
-      window.dispatchEvent(new CustomEvent('vibespot:shortcut', { detail: href }));
+      window.dispatchEvent(new CustomEvent('whystayin:shortcut', { detail: href }));
     }
   };
 
@@ -82,7 +82,7 @@ function BottomNavContent() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-stone-200/90 shadow-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-stone-200/80 shadow-xs"
       aria-label="Mobile Navigation"
     >
       <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
@@ -93,7 +93,7 @@ function BottomNavContent() {
             onClick={(e) => handleShortcutClick(e, href)}
             className={cn(
               'flex-1 flex flex-col items-center justify-center py-1 gap-1 select-none transition-colors',
-              isActive ? 'text-orange-600' : 'text-stone-500 hover:text-stone-800'
+              isActive ? 'text-[#FF5A36]' : 'text-stone-400 hover:text-stone-700'
             )}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />

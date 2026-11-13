@@ -132,18 +132,18 @@ export default function AccountPage() {
 
       <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm overflow-hidden mb-8">
         {/* Profile Header */}
-        <div className="bg-gradient-to-br from-stone-900 to-stone-850 p-8 text-center text-white relative">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white text-3xl font-black flex items-center justify-center mx-auto shadow-lg shadow-orange-500/20 border-2 border-white/20 mb-3">
+        <div className="bg-gradient-to-br from-slate-900 to-zinc-950 p-8 text-center text-white relative">
+          <div className="w-20 h-20 rounded-full bg-[#FF5A36] text-white text-3xl font-black flex items-center justify-center mx-auto shadow-md shadow-[#FF5A36]/25 border-2 border-white/20 mb-3">
             {initial}
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">
             {user.displayName || user.email?.split('@')[0]}
           </h1>
           <p className="text-stone-400 text-xs flex items-center justify-center gap-1.5 mt-1 font-mono">
-            <Mail size={13} className="text-orange-400" />
+            <Mail size={13} className="text-[#FF5A36]" />
             {user.email}
           </p>
-          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 text-orange-200 text-[11px] font-semibold mt-3 backdrop-blur-xs">
+          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/10 text-stone-200 text-[11px] font-semibold mt-3 backdrop-blur-xs">
             <ShieldCheck size={12} className="text-emerald-400" />
             Verified Firebase Account
           </div>

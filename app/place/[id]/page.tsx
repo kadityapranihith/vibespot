@@ -13,9 +13,9 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const place = await getPlaceById(id);
-  if (!place) return { title: 'Spot Not Found — Vibespot Kakinada' };
+  if (!place) return { title: 'Spot Not Found — WhyStayIn Kakinada' };
   return {
-    title: `${place.name} — Vibespot Kakinada`,
+    title: `${place.name} — WhyStayIn Kakinada`,
     description: `Discover ${place.name}, ${place.category} in Kakinada. Price for two: ₹${place.price_per_two || 'N/A'}.`,
   };
 }

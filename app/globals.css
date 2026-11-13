@@ -1,11 +1,35 @@
 @import "tailwindcss";
 
+/* ─── WhyStayIn: Clean Studio / Minimalist Modern Palette ─── */
+@theme {
+  --color-orange-50:  #FFF5F2;
+  --color-orange-100: #FFEAE4;
+  --color-orange-200: #FFD2C7;
+  --color-orange-300: #FFA894;
+  --color-orange-400: #FF7E61;
+  --color-orange-500: #FF5A36;
+  --color-orange-600: #FF5A36;
+  --color-orange-700: #E04826;
+  --color-orange-800: #BA381A;
+  --color-orange-900: #942E16;
+  --color-orange-950: #541607;
+
+  --color-amber-500: #F59E0B;
+  --color-amber-600: #D97706;
+}
+
 :root {
-  --orange: #ea580c;
-  --orange-dark: #c2410c;
-  --orange-light: #f97316;
-  --bg: #faf8f5;
-  --font-logo: 'Playfair Display', Georgia, serif;
+  /* WhyStayIn — Clean Studio / Minimalist Modern */
+  --brand: #FF5A36;           /* Electric Sunset Coral — primary action accent */
+  --brand-dark: #E04826;      /* Deep Coral — hover/active */
+  --brand-light: #FF7E61;     /* Soft Coral glow */
+  --bg-page: #FAFAFA;         /* Clean crisp alabaster page background */
+  --surface-card: #FFFFFF;    /* Pure crisp white cards */
+  --text-main: #0F172A;       /* Slate Obsidian — high contrast heading */
+  --text-muted: #64748B;      /* Cool Slate — readable subtext */
+  --border-light: #E2E8F0;    /* Hairline border */
+  --font-logo: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 }
 
 html {
@@ -17,8 +41,8 @@ html {
 }
 
 body {
-  background-color: var(--bg);
-  color: #1c1917;
+  background-color: var(--bg-page);
+  color: var(--text-main);
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -31,14 +55,49 @@ body {
 }
 
 .logo-script {
-  font-family: var(--font-logo), Georgia, serif;
-  font-style: italic;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-family: var(--font-logo), sans-serif;
+  letter-spacing: -0.03em;
 }
 
+.logo-why {
+  font-weight: 300;
+  color: #0F172A;
+}
+
+.logo-stay {
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.logo-in {
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.btn-brand {
+  background-color: var(--brand);
+  color: white;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-brand:hover {
+  background-color: var(--brand-dark);
+}
+
+.btn-brand:active {
+  transform: scale(0.98);
+}
+
+.btn-brand:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Backward compatibility alias */
 .btn-orange {
-  background-color: #ea580c;
+  background-color: var(--brand);
   color: white;
   font-weight: 700;
   border-radius: 9999px;
@@ -46,7 +105,7 @@ body {
 }
 
 .btn-orange:hover {
-  background-color: #c2410c;
+  background-color: var(--brand-dark);
 }
 
 .btn-orange:active {

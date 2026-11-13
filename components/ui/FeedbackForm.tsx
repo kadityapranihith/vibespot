@@ -56,14 +56,14 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
       id: 'feature' as const,
       label: 'Feature Idea',
       emoji: '💡',
-      placeholderSubject: 'e.g., Add veg-only filter / price range filter',
-      placeholderDesc: 'Describe the feature you would love to see on Vibespot...',
+      placeholderSubject: 'e.g., Add veg-only filter / chillout spots',
+      placeholderDesc: 'Describe the feature you would love to see on WhyStayIn...',
     },
     {
       id: 'place' as const,
       label: 'Suggest a Spot',
       emoji: '🍽️',
-      placeholderSubject: 'e.g., Add Sri Kanya Grand or local tiffin stall',
+      placeholderSubject: 'e.g., Add Sri Kanya Grand or local rooftop lounge',
       placeholderDesc: 'Tell us the spot name, area in Kakinada, and why it is great...',
     },
     {
@@ -117,7 +117,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
 
   // Mailto fallback
   const handleOpenMailto = () => {
-    const fullSubject = `[Vibespot ${currentTopic.label}] ${subject.trim() || 'Community Feedback'}`;
+    const fullSubject = `[WhyStayIn ${currentTopic.label}] ${subject.trim() || 'Community Feedback'}`;
     const fullBody = `Hi Aditya,\n\nFeedback Type: ${currentTopic.label}\nFrom: ${senderName || 'User'} (${senderEmail || 'N/A'})\n\nDetails:\n${description.trim()}`;
     window.location.href = `mailto:${TARGET_EMAIL}?subject=${encodeURIComponent(fullSubject)}&body=${encodeURIComponent(fullBody)}`;
   };
@@ -132,7 +132,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
           Feedback Submitted Successfully!
         </h3>
         <p className="text-xs text-stone-600 max-w-sm mx-auto mb-5 leading-relaxed">
-          Thank you for helping improve Vibespot! Our team in Kakinada reviews all suggestions and bug reports.
+          Thank you for helping improve WhyStayIn! Our team in Kakinada reviews all suggestions and bug reports.
         </p>
         <button
           onClick={() => {
@@ -171,7 +171,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
                 onClick={() => setTopic(t.id)}
                 className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition-all text-left flex items-center gap-1.5 ${
                   isSelected
-                    ? 'bg-orange-600 text-white border-orange-600 shadow-xs scale-[1.02]'
+                    ? 'bg-[#FF5A36] text-white border-[#FF5A36] shadow-xs scale-[1.02]'
                     : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
                 }`}
               >
@@ -194,7 +194,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
             value={senderName}
             onChange={(e) => setSenderName(e.target.value)}
             placeholder="e.g., Aditya"
-            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] bg-white"
           />
         </div>
         <div>
@@ -206,7 +206,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
             value={senderEmail}
             onChange={(e) => setSenderEmail(e.target.value)}
             placeholder="your-email@gmail.com"
-            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+            className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] bg-white"
           />
         </div>
       </div>
@@ -221,14 +221,14 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder={currentTopic.placeholderSubject}
-          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white"
+          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] bg-white"
         />
       </div>
 
       {/* Issue Details */}
       <div>
         <label className="block text-[11px] font-bold text-stone-600 mb-1">
-          Issue / Details <span className="text-orange-600 font-bold">*</span>
+          Issue / Details <span className="text-[#FF5A36] font-bold">*</span>
         </label>
         <textarea
           rows={isModal ? 3 : 5}
@@ -236,7 +236,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
           onChange={(e) => setDescription(e.target.value)}
           placeholder={currentTopic.placeholderDesc}
           required
-          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-white leading-relaxed resize-none"
+          className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#FF5A36]/10 focus:border-[#FF5A36] bg-white leading-relaxed resize-none"
         />
       </div>
 
@@ -244,7 +244,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-bold py-3.5 px-4 rounded-xl shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
+        className="w-full bg-[#FF5A36] hover:bg-[#E04826] disabled:opacity-50 text-white text-xs font-bold py-3.5 px-4 rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
       >
         {submitting ? (
           <>
@@ -265,7 +265,7 @@ export function FeedbackForm({ onSuccess, isModal = false }: FeedbackFormProps) 
         <button
           type="button"
           onClick={handleOpenMailto}
-          className="text-stone-600 hover:text-orange-600 font-bold flex items-center gap-1.5 transition-colors"
+          className="text-stone-600 hover:text-[#FF5A36] font-bold flex items-center gap-1.5 transition-colors"
         >
           <Mail size={12} /> Send via Mail App
         </button>
