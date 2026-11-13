@@ -21,6 +21,7 @@ export function Logo({ href, className = 'h-8 sm:h-10 w-auto' }: LogoProps) {
       height={274}
       className={`object-contain select-none shrink-0 ${className}`}
       priority
+      unoptimized
     />
   );
 

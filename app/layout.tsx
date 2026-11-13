@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     'chillout places Kakinada',
     'local spots Kakinada',
   ],
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 export const viewport: Viewport = {
